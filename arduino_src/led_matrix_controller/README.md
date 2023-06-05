@@ -28,6 +28,7 @@ Software libraries can be downloaded and installed manually, or installed throug
 The following libraries are useful:
 
 - [RGB-matrix-Panel](https://github.com/adafruit/RGB-matrix-Panel) - Controls the Adafruit 16 x 32 and 32 x 32 RGD LED Matrix Panels
+- [Adafruit Protomatter](https://github.com/adafruit/Adafruit_Protomatter) - More up-to-date than RGB-matrix-Panel, but harder to use
 
 ## Misc.
 
