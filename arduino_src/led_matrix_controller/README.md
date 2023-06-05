@@ -20,3 +20,23 @@ After adding the URL, navigate to `Tools > Board: ... > Boards Manager`. Search 
 2. `Adafruit SAMD Boards`
 
 Quit and re-open the Arduino IDE. Navigate to `Tools > Board` and select the `Adafruit Metro Express M0`. **Be sure not to select the Arduino M0 -- this is a different board!**
+
+### Software libraries
+
+Software libraries can be downloaded and installed manually, or installed through the Arduino IDE by going to `Tools > Manage Libraries...`.
+
+The following libraries are useful:
+
+- [RGB-matrix-Panel](https://github.com/adafruit/RGB-matrix-Panel) - Controls the Adafruit 16 x 32 and 32 x 32 RGD LED Matrix Panels
+
+## Misc.
+
+### Arduino CLI and the Windows Subsystem for Linux (WSL)
+
+The Arduino CLI can be used from within the WSL. This can be used to compile and verify sketches from the command line.
+
+First install it into Windows (not the WSL!) Then, from the WSL terminal you can invoke it using the full path on the Windows mount:
+
+```console
+/mnt/c/Program\ Files/Arduino\ CLI/arduino-cli.exe -h
+```
