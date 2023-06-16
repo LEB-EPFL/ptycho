@@ -13,13 +13,6 @@ typedef struct {
   bool state;
 } Message;
 
-// LED Matrix
-uint8_t rgbPins[]  = {7, 8, 9, 10, 11, 12};
-uint8_t addrPins[] = {17, 18, 19, 20};
-uint8_t clockPin   = 14;
-uint8_t latchPin   = 15;
-uint8_t oePin      = 16;
-
 // Parse the string for the X Y [0|1] format.
 void parseMessage(const String& input, Message& msg) {
   int x, y, state;
@@ -35,13 +28,19 @@ void parseMessage(const String& input, Message& msg) {
   }
 }
 
+// LED Matrix
+uint8_t rgbPins[]  = {2, 3, 4, 5, 6, 7};
+uint8_t addrPins[] = {A0, A1, A2, A3};
+uint8_t clockPin   = 8;
+uint8_t latchPin   = 10;
+uint8_t oePin      = 9;
+
 void drawPixel(const Message& msg, Adafruit_Protomatter& matrix) {
   matrix.drawPixel(msg.x, msg.y, msg.state);
   matrix.show();
 }
 
 Adafruit_Protomatter matrix(32, 4, 1, rgbPins, 4, addrPins, clockPin, latchPin, oePin, false);
-
 String input;
 Message msg;
 
