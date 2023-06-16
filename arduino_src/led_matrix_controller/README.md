@@ -29,15 +29,3 @@ The following libraries are useful:
 
 - [RGB-matrix-Panel](https://github.com/adafruit/RGB-matrix-Panel) - Controls the Adafruit 16 x 32 and 32 x 32 RGD LED Matrix Panels
 - [Adafruit Protomatter](https://github.com/adafruit/Adafruit_Protomatter) - More up-to-date than RGB-matrix-Panel, but harder to use
-
-## Misc.
-
-### Arduino CLI and the Windows Subsystem for Linux (WSL)
-
-The Arduino CLI can be used from within the WSL. This can be used to compile and verify sketches from the command line.
-
-First install it into Windows (not the WSL!) Then, from the WSL terminal you can invoke it using the full path on the Windows mount:
-
-```console
-/mnt/c/Program\ Files/Arduino\ CLI/arduino-cli.exe -h
-```
