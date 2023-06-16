@@ -36,7 +36,7 @@ uint8_t latchPin   = 10;
 uint8_t oePin      = 9;
 
 void drawPixel(const Message& msg, Adafruit_Protomatter& matrix) {
-  matrix.drawPixel(msg.x, msg.y, msg.state);
+  matrix.drawPixel(msg.x, msg.y, msg.state * 65535);
   matrix.show();
 }
 
