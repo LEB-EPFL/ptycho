@@ -1,3 +1,6 @@
+#include <Adafruit_Protomatter.h>
+
+// Comms
 const uint32_t BAUD = 9600;
 const size_t CHAR_LIMIT = 20;
 const char LINE_TERMINATOR = '\n';
@@ -9,6 +12,13 @@ typedef struct {
   int y;
   bool state;
 } Message;
+
+// LED Matrix
+uint8_t rgbPins[]  = {7, 8, 9, 10, 11, 12};
+uint8_t addrPins[] = {17, 18, 19, 20};
+uint8_t clockPin   = 14;
+uint8_t latchPin   = 15;
+uint8_t oePin      = 16;
 
 // Parse the string for the X Y [0|1] format.
 void parseMessage(const String& input, Message& msg) {
@@ -25,6 +35,13 @@ void parseMessage(const String& input, Message& msg) {
   }
 }
 
+void drawPixel(const Message& msg, Adafruit_Protomatter& matrix) {
+  matrix.drawPixel(msg.x, msg.y, msg.state);
+  matrix.show();
+}
+
+Adafruit_Protomatter matrix(32, 4, 1, rgbPins, 4, addrPins, clockPin, latchPin, oePin, false);
+
 String input;
 Message msg;
 
@@ -34,17 +51,25 @@ void print_help() {
 
 void setup() {
   Serial.begin(BAUD);
+
+  // Initialize LED matrix
+  ProtomatterStatus status = matrix.begin();
+  Serial.print("Protomatter begin() status: ");
+  Serial.println((int)status);
+  if(status != PROTOMATTER_OK) {
+    for(;;);
+  }
 }
 
 void loop() {
   if (readStringUntil(input, LINE_TERMINATOR, CHAR_LIMIT)) {
     parseMessage(input, msg);
-
-    // Error checking
     if (msg.x < 0) {
       Serial.print(F("Invalid command: ")); Serial.println(input);
+      print_help();
     } else {
         Serial.println(OK);
+        drawPixel(msg, matrix);
     }
 
     // Clear the input buffer to prepare for the next line.
