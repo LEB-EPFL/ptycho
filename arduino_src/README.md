@@ -2,7 +2,13 @@
 
 Arduino source code files.
 
+- [led_matrix_controller](led_matrix_controller) : The controller for the LED matrix
+
 ## Arduino on the WSL
+
+**Note: This won't let you upload sketches to the Arduino because usbipd freaks out when the board resets and won't automatically reattach the board to the WSL.**
+
+If developing in Windows, the best approach is to use Windows and not the WSL.
 
 ### Access the Arduino from the WSL via USB
 
