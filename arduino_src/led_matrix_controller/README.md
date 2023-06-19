@@ -6,7 +6,13 @@ Arduino code for controlling a LED matrix, such as the [Adafruit 607 32 x 32 RGB
 
 The LED Matrix Controller is a serial port interface for creating patterns on a RGB LED Matrix. Commands are sent to the Arduino via serial port and are then parsed into drawing instructions. The instructions are then executed, creating the desired pattern on the matrix.
 
-For example, to draw a single pixel at location (10, 17), send the following command to the Arduino via the serial port, using the linefeed (LF) terminator:
+All commands must be terminated with a linefeed (LF) character, i.e. `\n`. To get a list of all commands, simply send `help` to the device.
+
+Whenever the board successfully parses your command, a `0` will be returned as an acknowledgement. Any non-zero response is an error.
+
+## Getting started
+
+As an example, we can illuminate a single pixel at location (10, 17) by sending the following command to the Arduino via the serial port. Remember to send a linefeed (LF) terminator at the end:
 
 ```console
 draw 10 17 1
@@ -17,8 +23,6 @@ The final `1` stands for `ON`. To turn off the same pixel, send
 ```console
 draw 10 17 0
 ```
-
-Whenever the board successfully parses your command, a `0` will be returned as an acknowledgement. Any non-zero response is an error.
 
 ## Setup
 

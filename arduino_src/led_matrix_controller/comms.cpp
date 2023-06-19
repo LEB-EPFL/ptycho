@@ -65,9 +65,16 @@ void parseMessage(const String& input, Message& msg) {
     msg.error_msg = "No line terminator found";
     return;
   }
-
-  String verbStr = input.substring(0, input.indexOf(' '));
-  String argStr = input.substring(input.indexOf(' ') + 1);
+  int verbEnd = input.indexOf(' ');
+  String verbStr;
+  String argStr;
+  if (verbEnd == -1) {
+    // verbStr is the whole string; get rid of the line terminator.
+    verbStr = input.substring(0, input.length() - 1);
+  } else {
+    verbStr = input.substring(0, verbEnd);
+    argStr = input.substring(verbEnd + 1);
+  }
 
   // Parse the verb part of the command
   msg.is_valid = true;
@@ -77,6 +84,8 @@ void parseMessage(const String& input, Message& msg) {
   } else if (verbStr.equalsIgnoreCase("fill")) {
     msg.cmd = Command::fill;
     parseFillArgs(argStr, msg);
+  } else if (verbStr.equalsIgnoreCase("help")) {
+    msg.cmd = Command::help;
   } else {
     // Handle unrecognized commands
     msg.is_valid = false;

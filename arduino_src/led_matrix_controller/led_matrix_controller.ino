@@ -24,6 +24,7 @@ void printHelp() {
   Serial.println(F("Available commands:"));
   Serial.println(F("  draw <x> <y> (0 | 1)\\n"));
   Serial.println(F("  fill (0 | 1)\\n"));
+  Serial.println(F("  help\\n"));
   Serial.println(F(""));
   Serial.println("Note: commands must be terminated with a \\n character.");
 }
@@ -51,12 +52,12 @@ void loop() {
   if (readStringUntil(input, LINE_TERMINATOR, CHAR_LIMIT)) {
     parseMessage(input, msg);
     if (msg.is_valid) {
-      Serial.println(OK);
       doAction(msg, matrix);
+      Serial.print(OK);
     } else {
       Serial.println(msg.error_msg);
       printHelp();
-      Serial.println(ERROR);
+      Serial.print(ERROR);
     }
 
     // Clear the input buffer to prepare for the next line.
@@ -71,6 +72,9 @@ void doAction(const Message& msg, Adafruit_Protomatter& matrix) {
       break;
     case Command::fill:
       fill(msg, matrix);
+      break;
+    case Command::help:
+      printHelp();
       break;
     default:
       break;

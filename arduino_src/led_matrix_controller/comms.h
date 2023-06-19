@@ -14,7 +14,7 @@ const size_t CHAR_LIMIT    = 20;
 const char LINE_TERMINATOR = '\n';
 
 // The set of possible commands that can be sent to the LED matrix.
-enum class Command {draw, fill};
+enum class Command {draw, fill, help};
 
 // Message data after parsing the serial input.
 // Each LED matrix command uses a non-exclusive subset of the fields.
