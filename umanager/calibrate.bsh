@@ -5,24 +5,36 @@
  * One image is acquired at each LED position.
  */
 
- /*
-  * Configuration
-  */
- int numLEDs = 20 * 20;
- int[] centerLEDCoord = {13, 15};
+// Configuration
+//
+// Data in this section should change based on your experimental situation.
+
+// The coordinate of the on-axis LED as determined during the initial alignment
+int[] centerLEDCoord = {13, 15};
+
+
+// The number of LEDs to use during the calibration; can be less than the number of LEDs in the matrix
+int numLEDs = 20 * 20;
 
 /*
- * DO NOT EDIT BELOW THIS LINE
+ * CODE BELOW THIS LINE IS NOT LIKELY TO CHANGE
  * =================================================================================================================================
  */
+
+// Serial communications configuration
+// Data here should change if the serial interface to the LED controller changes
 String port = "COM5"; 
 String drawCommand = "draw ";
-String fillCommand = "fill ";
+String clearCommand = "fill 0";
 String commandTerminator = "\n"; 
 String answerTerminator = "\n";
- 
+
+// The spiral direction
 String direction = "counterclockwise";
 
+// Returns the row, col index of a position on a square grid whose trajectory spirals outward from the center.
+//
+// This is used to illuminate one LED at a time in spiral pattern from the center.
 int[] spiral(int index, int[] center, String direction) {
     int row = center[0];
     int col = center[1];
@@ -32,7 +44,6 @@ int[] spiral(int index, int[] center, String direction) {
 
     int step = 1;
     int stepsTaken = 0;
-    int stepsToTake = 1;
     HashMap directions = new HashMap();
     directions.put("clockwise", new int[]{0, 1, 1, 0, 0, -1, -1, 0});
     directions.put("counterclockwise", new int[]{0, 1, -1, 0, 0, -1, 1, 0});
@@ -58,48 +69,42 @@ int[] spiral(int index, int[] center, String direction) {
     return new int[]{row, col};
 }
 
-import org.micromanager.data.Coords;
+// Acquisiton configuration
 import org.micromanager.data.Image;
 import org.micromanager.data.Datastore;
 import org.micromanager.display.DisplayWindow;
 
 import mmcorej.TaggedImage;
 
-/*
- * Prepare the image datastore and acquisition
- */
 Datastore store = mm.data().createRAMDatastore();
 DisplayWindow display = mm.displays().createDisplay(store);
 mm.displays().manage(store);
 cb = mm.data().coordsBuilder();
 
-
-/*
- * Main acquisition loop
- */
-
+// Main acquisition loop
 int[] currentCoords;
-Image image;
 for (int i = 0; i < numLEDs; i++) {
-	print(i);
-    // Clear the board
-    mmc.setSerialPortCommand(port, fillCommand + "0", commandTerminator);
+    print("Iteration number " + i " of " + numLEDs - 1);
+
+    // Clear the LED matrix
+    mmc.setSerialPortCommand(port, eraseCommand, commandTerminator);
     answer = mmc.getSerialPortAnswer(port, answerTerminator); 
 
-	 // Get the pixel coordinates
-	 currentCoords = spiral(i, centerLEDCoord, direction);
+	// Get the coordinates of the LED to illuminate
+	currentCoords = spiral(i, centerLEDCoord, direction);
+
+    // TODO Ensure the currentCoords actually exist on the LED matrix
+    // If not, continue to the next iteration. This will likely mean we will
+    // have to use a while loop so that the index only increases when the coordinates
+    // are valid.
 
     // Draw the pixel
     mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + currentCoords[1] +" 1", commandTerminator);
     answer = mmc.getSerialPortAnswer(port, answerTerminator);
 
-    // Sleep 100 ms to ensure the pixel is lit
-    mmc.sleep(100);
-
-    // Take image
+    // Take image, assign coordinates, and put it in the image store.
     images = mm.live().snap(true); 
     img = images.get(0);
-    // copy image with Coords specified by our builder
     cImg = img.copyAtCoords(cb.time(i).build());
     store.putImage(cImg);
 }
