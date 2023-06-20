@@ -52,14 +52,33 @@ The following libraries are useful:
 - [RGB-matrix-Panel](https://github.com/adafruit/RGB-matrix-Panel) - Controls the Adafruit 16 x 32 and 32 x 32 RGD LED Matrix Panels
 - [Adafruit Protomatter](https://github.com/adafruit/Adafruit_Protomatter) - More up-to-date than RGB-matrix-Panel, but harder to use
 
+## Controller Design
+
+The controller is built around two main components:
+
+1. The message parser, which parses incoming serial commands into structured messages
+2. Drawing logic, which puts patterns on the LED matrix according to the structured message data
+
+The interface between the two components is the `Message` struct. Other than this interface, the two different components are not coupled and can be changed independently if required.
+
+### Messages
+
+Messages have three broad categories of fields:
+
+1. A command, which represents a verb or object that describes what will be drawn on the matrix
+2. Command arguments, which control the details about drawing patterns
+3. Flow control, which contain information about error states and provide feedback to users
+
+The fields of the `Message` struct that represent the command arguments need not be unique to a single command, and a single command will only use the fields it needs. It was easier to create one single `Message` struct than having a different structs for each command.
+
 ## Creating new patterns
 
-In general, any pattern can be drawn by sending multiple `draw` commands to build up a pattern pixel-by-pixel. However, this is very slow. For example, it requires tens of seconds to fill the entire matrix with a single value.
+In general, any pattern can be drawn by sending multiple `draw` commands via the serial interface to build up a pattern pixel-by-pixel. However, this is very slow. For example, it requires tens of seconds to fill the entire matrix with a single value.
 
-It is much faster to have the Arduino draw the patterns. When you want a new pattern, you must do a few things extend both the serial interface and the drawing logic. The following steps are a rough guide for what to do:
+It is much faster to have the Arduino draw the patterns. When you want a new pattern, you must do a few things to extend both the serial interface and the drawing logic. The following steps are a rough guide for what to do:
 
-1. If necessary, extend the `Message` struct so that a parsed message can contain the arguments for the drawing logic. If an argument already exists in the struct that can serve this purpose, then you can use it and adding one will not be necessary.
+1. If necessary, extend the `Message` struct so that a parsed message can contain the arguments for the drawing logic. If an argument already exists in the struct that can serve this purpose, then you can use it and adding one will not be necessary. If new fields are added to the struct, be sure to update the `messageInit` function as well.
 2. Add a new verb to the `Command` enum class that serves as the name of the new command.
-3. Extend the `parseMessage` and add a `parseXXXArgs` to process your new command and its arguments, where `XXX` is the new verb's name.
+3. Extend the `parseMessage` function and add a `parseXXXArgs` function to process your new command and its arguments, where `XXX` is the new verb's name.
 4. Create a function in `drawing.cpp` that serves as the actual drawing logic.
 5. Extend the `doAction` function to execute the code from the previous step that is associated with the new command. 

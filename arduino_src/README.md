@@ -4,6 +4,54 @@ Arduino source code files.
 
 - [led_matrix_controller](led_matrix_controller) : The controller for the LED matrix
 
+## Arduino in VS Code
+
+### Arduino CLI
+
+Use the version of the Arduino CLI that is bundled with VS Code. I couldn't get an independently installed version to work.
+
+### Add the Adafruit SAMD Boards URL
+
+The following will add the Adafruit boards URL so that you can interface with Adafruit Metro boards.
+
+1. Install the Arduino extension; choose to use the version of Arduino CLI that is bundled with VSCode
+2. Open the global settings file: `File > Preferences > Settings...`
+3. Add the following entry:
+
+```
+"arduino.additionalUrls": [
+    "",
+    "https://adafruit.github.io/arduino-board-index/package_adafruit_index.json"
+]
+```
+
+4. Press `F1` and type `Arduino: Board Manager`
+5. Search for `Arduino SAMD` and install that boards pacakge.
+6. Search for `Adafruit SAMD` and install it. If the Adafruit SAMD boards do not appear in the list, then the URL is not configured properly.
+
+### Output path
+
+When verifying an Arduino sketch, you might see the following warning:
+
+```
+[Warning] Output path is not specified. Unable to reuse previously compiled files. Build will be slower. See README.
+```
+
+To fix it, add an output folder to `.vscode/arduino/json`. Here is an example:
+
+```
+{
+    "configuration": "cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off",
+    "board": "adafruit:samd:adafruit_metro_m4",
+    "port": "/dev/ttyACM0",
+    "sketch": "arduino_src/serial_reader/serial_reader.ino",
+    "output": "../build"
+}
+
+```
+
+**The output folder should not be in the workspace,** hence the `../` in the output folder above.
+
 ## Arduino on the WSL
 
 **Note: This won't let you upload sketches to the Arduino because usbipd freaks out when the board resets and won't automatically reattach the board to the WSL.**
@@ -71,51 +119,3 @@ Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 ```
 
 9. (Optional) Select the device in VS Code. In my case, the device attaches to `/dev/ttyACM0`.
-
-## Arduino in VS Code
-
-### Arduino CLI
-
-Use the version of the Arduino CLI that is bundled with VS Code. I couldn't get an independently installed version to work.
-
-### Add the Adafruit SAMD Boards URL
-
-The following will add the Adafruit boards URL so that you can interface with Adafruit Metro boards.
-
-1. Install the Arduino extension; choose to use the version of Arduino CLI that is bundled with VSCode
-2. Open the global settings file: `File > Preferences > Settings...`
-3. Add the following entry:
-
-```
-"arduino.additionalUrls": [
-    "",
-    "https://adafruit.github.io/arduino-board-index/package_adafruit_index.json"
-]
-```
-
-4. Press `F1` and type `Arduino: Board Manager`
-5. Search for `Arduino SAMD` and install that boards pacakge.
-6. Search for `Adafruit SAMD` and install it. If the Adafruit SAMD boards do not appear in the list, then the URL is not configured properly.
-
-### Output path
-
-When verifying an Arduino sketch, you might see the following warning:
-
-```
-[Warning] Output path is not specified. Unable to reuse previously compiled files. Build will be slower. See README.
-```
-
-To fix it, add an output folder to `.vscode/arduino/json`. Here is an example:
-
-```
-{
-    "configuration": "cache=on,speed=120,opt=small,maxqspi=50,usbstack=arduino,debug=off",
-    "board": "adafruit:samd:adafruit_metro_m4",
-    "port": "/dev/ttyACM0",
-    "sketch": "arduino_src/serial_reader/serial_reader.ino",
-    "output": "../build"
-}
-
-```
-
-**The output folder should not be in the workspace,** hence the `../` in the output folder above.
