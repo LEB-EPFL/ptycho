@@ -8,22 +8,22 @@
  /*
   * Configuration
   */
- int numLEDs = 4 * 4;
- int[] centerLEDCoord = {17, 15};
+ int numLEDs = 10 * 10;
+ int[] centerLEDCoord = {13, 15};
 
- /*
-  * DO NOT EDIT BELOW THIS LINE
-  * =================================================================================================================================
-  */
- String port = "COM5"; 
- String drawCommand = "draw ";
- String fillCommand = "fill ";
- String commandTerminator = "\n"; 
- String answerTerminator = "\n";
+/*
+ * DO NOT EDIT BELOW THIS LINE
+ * =================================================================================================================================
+ */
+String port = "COM5"; 
+String drawCommand = "draw ";
+String fillCommand = "fill ";
+String commandTerminator = "\n"; 
+String answerTerminator = "\n";
  
- String direction = "counterclockwise";
+String direction = "counterclockwise";
 
-int[] spiralCoordinates(int index, int[] center, String direction) {
+int[] spiral(int index, int[] center, String direction) {
     int row = center[0];
     int col = center[1];
     if (index == 0) {
@@ -58,23 +58,49 @@ int[] spiralCoordinates(int index, int[] center, String direction) {
     return new int[]{row, col};
 }
 
+import org.micromanager.data.Coords;
+import org.micromanager.data.Image;
+import org.micromanager.data.Datastore;
+import org.micromanager.display.DisplayWindow;
+
+import mmcorej.TaggedImage;
+
+/*
+ * Prepare the image datastore and acquisition
+ */
+Datastore store = mm.data().createRewritableRAMDatastore();
+DisplayWindow display = mm.displays().createDisplay(store);
+mm.displays().manage(store);
+
+
 /*
  * Main acquisition loop
  */
 
 int[] currentCoords;
-for (int i; i < numLEDs; i++) {
+Image image;
+for (int i = 0; i < numLEDs; i++) {
+	print(i);
     // Clear the board
     mmc.setSerialPortCommand(port, fillCommand + "0", commandTerminator);
     answer = mmc.getSerialPortAnswer(port, answerTerminator); 
 
 	 // Get the pixel coordinates
-	 currentCoords = spiral(i, centerLEDcoord, direction);
+	 currentCoords = spiral(i, centerLEDCoord, direction);
 
-   // Draw the pixel
-   mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + cuurentCoords[1] +" 1", commandTerminator);
-   answer = mmc.getSerialPortAnswer(port, answerTerminator);
+    // Draw the pixel
+    mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + currentCoords[1] +" 1", commandTerminator);
+    answer = mmc.getSerialPortAnswer(port, answerTerminator);
 
-	// Sleep 500 ms
-   mmc.sleep(500);
- }
+    // Sleep 100 ms to ensure the pixel is lit
+    mmc.sleep(100);
+
+    // Take image
+    mmc.snapImage();
+    TaggedImage tmp = mmc.getTaggedImage();
+    image = mm.data().convertTaggedImage(tmp);
+    image.copyAtCoords(image.getCoords().copy().time(i).build());
+    store.putImage(image);
+}
+
+store.freeze()
