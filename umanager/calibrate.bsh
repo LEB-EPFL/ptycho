@@ -23,7 +23,7 @@
  
  String direction = "counterclockwise";
 
-int[] spiralCoordinates(int index, int[] center, String direction) {
+int[] spiral(int index, int[] center, String direction) {
     int row = center[0];
     int col = center[1];
     if (index == 0) {
@@ -69,12 +69,12 @@ for (int i; i < numLEDs; i++) {
     answer = mmc.getSerialPortAnswer(port, answerTerminator); 
 
 	 // Get the pixel coordinates
-	 currentCoords = spiral(i, centerLEDcoord, direction);
+	 currentCoords = spiral(i, centerLEDCoord, direction);
 
-   // Draw the pixel
-   mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + cuurentCoords[1] +" 1", commandTerminator);
-   answer = mmc.getSerialPortAnswer(port, answerTerminator);
+    // Draw the pixel
+    mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + currentCoords[1] +" 1", commandTerminator);
+    answer = mmc.getSerialPortAnswer(port, answerTerminator);
 
-	// Sleep 500 ms
-   mmc.sleep(500);
- }
+	 // Sleep 500 ms
+    mmc.sleep(250);
+}
