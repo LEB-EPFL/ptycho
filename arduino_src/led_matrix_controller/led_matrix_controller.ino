@@ -53,11 +53,11 @@ void loop() {
     parseMessage(input, msg);
     if (msg.is_valid) {
       doAction(msg, matrix);
-      Serial.print(OK);
+      sendResponse(OK);
     } else {
       Serial.println(msg.error_msg);
       printHelp();
-      Serial.print(ERROR);
+      sendResponse(ERROR);
     }
 
     // Clear the input buffer to prepare for the next line.
@@ -79,4 +79,9 @@ void doAction(const Message& msg, Adafruit_Protomatter& matrix) {
     default:
       break;
   }
+}
+
+void sendResponse(uint8_t status) {
+  Serial.print(status);
+  Serial.print(LINE_TERMINATOR);
 }
