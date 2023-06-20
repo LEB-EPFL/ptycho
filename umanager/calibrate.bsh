@@ -1,3 +1,28 @@
+/**
+ * Acquire a calibration Fourier Ptychography dataset.
+ * 
+ * This code acquires images by illuminating LEDs in a LED matrix in a spiral pattern starting from a center coordinate.
+ * One image is acquired at each LED position.
+ */
+
+ /*
+  * Configuration
+  */
+ int numLEDs = 4 * 4;
+ int[] centerLEDCoord = {17, 15};
+
+ /*
+  * DO NOT EDIT BELOW THIS LINE
+  * =================================================================================================================================
+  */
+ String port = "COM5"; 
+ String drawCommand = "draw ";
+ String fillCommand = "fill ";
+ String commandTerminator = "\n"; 
+ String answerTerminator = "\n";
+ 
+ String direction = "counterclockwise";
+
 int[] spiralCoordinates(int index, int[] center, String direction) {
     int row = center[0];
     int col = center[1];
@@ -33,7 +58,23 @@ int[] spiralCoordinates(int index, int[] center, String direction) {
     return new int[]{row, col};
 }
 
-int[] center = {1, 1};
-String direction = "counterclockwise";
+/*
+ * Main acquisition loop
+ */
 
-print(spiralCoordinates(0, center, direction));
+int[] currentCoords;
+for (int i; i < numLEDs; i++) {
+    // Clear the board
+    mmc.setSerialPortCommand(port, fillCommand + "0", commandTerminator);
+    answer = mmc.getSerialPortAnswer(port, answerTerminator); 
+
+	 // Get the pixel coordinates
+	 currentCoords = spiral(i, centerLEDcoord, direction);
+
+   // Draw the pixel
+   mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + cuurentCoords[1] +" 1", commandTerminator);
+   answer = mmc.getSerialPortAnswer(port, answerTerminator);
+
+	// Sleep 500 ms
+   mmc.sleep(500);
+ }
