@@ -1,0 +1,39 @@
+int[] spiralCoordinates(int index, int[] center, String direction) {
+    int row = center[0];
+    int col = center[1];
+    if (index == 0) {
+        return new int[]{row, col};
+    }
+
+    int step = 1;
+    int stepsTaken = 0;
+    int stepsToTake = 1;
+    HashMap directions = new HashMap();
+    directions.put("clockwise", new int[]{0, 1, 1, 0, 0, -1, -1, 0});
+    directions.put("counterclockwise", new int[]{0, 1, -1, 0, 0, -1, 1, 0});
+    int directionIndex = 0;
+
+    while (stepsTaken < index) {
+        int dr = directions.get(direction)[directionIndex * 2];
+        int dc = directions.get(direction)[directionIndex * 2 + 1];
+        for (int i = 0; i < step; i++) {
+            row += dr;
+            col += dc;
+            stepsTaken++;
+            if (stepsTaken == index) {
+                return new int[]{row, col};
+            }
+        }
+        directionIndex = (directionIndex + 1) % 4;
+        if (directionIndex % 2 == 0) {
+            step++;
+        }
+    }
+
+    return new int[]{row, col};
+}
+
+int[] center = {1, 1};
+String direction = "counterclockwise";
+
+print(spiralCoordinates(0, center, direction));
