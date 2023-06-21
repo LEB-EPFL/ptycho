@@ -30,3 +30,6 @@ minversion = "7.0"
 testpaths = [
     "tests/leb-freeze",
 ]
+
+[tool.ruff]
+line-length = 100
