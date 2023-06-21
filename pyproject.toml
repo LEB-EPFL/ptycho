@@ -15,6 +15,7 @@ packages = [
 numpy = "*"
 python = "^3.8"
 scikit-image = "*"
+zernike = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
