@@ -1,5 +1,7 @@
 # Mr. Freeze
 
+![build](https://github.com/LEB-EPFL/mr-freeze/actions/workflows/build.yml/badge.svg)
+
 Hardware control and image analysis code for Mr. Freeze, the LEB plunge freezer.
 
 ## leb-freeze - A Python package for Fourier Ptychography
