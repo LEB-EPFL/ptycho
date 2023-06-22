@@ -1,3 +1,5 @@
+
+"""The primary module for performing Fourier ptychographic reconstruction."""
 from enum import Enum
 
 import numpy as np
@@ -11,7 +13,7 @@ class Method(Enum):
 
 
 def fp_recover(
-    images: np.array, 
+    images: np.ndarray, 
     num_iterations: int = 10, 
     method: Method = Method.rPIE,
     scaling_factor: int = 4
