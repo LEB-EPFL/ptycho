@@ -55,3 +55,9 @@ class PtychoDataset:
 
     def __len__(self):
         return self.images.shape[0]
+
+    def __getitem__(self, index) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        return self.images[index], self.wavevectors[index], self.led_indexes[index]
+
+    def __iter__(self):
+        return (self[i] for i in range(len(self)))

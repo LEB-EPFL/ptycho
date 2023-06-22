@@ -23,6 +23,27 @@ def test_ptychodataset(fake_data):
     assert len(dataset) == len(images)
 
 
+def test_ptychodataset_can_index_into_dataset(fake_data):
+    dataset = PtychoDataset(*fake_data)
+
+    image_1, wavevector_1, led_index_1 = dataset[1]
+
+
+def test_ptychodataset_index_out_of_bounds(fake_data):
+    dataset = PtychoDataset(*fake_data)
+    index = len(dataset) + 1
+
+    with pytest.raises(IndexError):
+        image, wavevector, led_index = dataset[index]
+
+
+def test_pytchodataset_is_iterable(fake_data):
+    dataset = PtychoDataset(*fake_data)
+
+    for image, wavevector, led_index in dataset:
+        pass
+
+
 def test_ptychodataset_images_wrong_ndim(fake_data):
     images, wavevectors, led_indexes = fake_data
     images = images[:, np.newaxis]
