@@ -61,3 +61,35 @@ def test_ptychodataset_led_indexes_wrong_ndim(fake_data):
 
     with pytest.raises(ValueError):
         PtychoDataset(images, wavevectors, led_indexes)
+
+
+def test_ptychodataset_led_indexes_not_2d(fake_data):
+    images, wavevectors, led_indexes = fake_data
+    led_indexes = led_indexes[:, 0:-1]
+
+    with pytest.raises(ValueError):
+        PtychoDataset(images, wavevectors, led_indexes)
+
+
+def test_ptychodataset_different_number_of_images(fake_data):
+    images, wavevectors, led_indexes = fake_data
+    images = images[0:-1]
+
+    with pytest.raises(ValueError):
+        PtychoDataset(images, wavevectors, led_indexes)
+
+
+def test_ptychodataset_different_number_of_wavevectors(fake_data):
+    images, wavevectors, led_indexes = fake_data
+    wavevectors = wavevectors[0:-1]
+
+    with pytest.raises(ValueError):
+        PtychoDataset(images, wavevectors, led_indexes)
+
+
+def test_ptychodataset_different_number_of_led_indexes(fake_data):
+    images, wavevectors, led_indexes = fake_data
+    led_indexes = led_indexes[0:-1]
+
+    with pytest.raises(ValueError):
+        PtychoDataset(images, wavevectors, led_indexes)

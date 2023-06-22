@@ -5,6 +5,8 @@ import numpy as np
 from numpy.fft import fft2, fftshift
 from skimage.transform import rescale
 
+from leb.freeze.datasets import PtychoDataset
+
 
 class Method(Enum):
     rPIE = "rPIE"
@@ -12,14 +14,14 @@ class Method(Enum):
 
 
 def fp_recover(
-    images: np.ndarray,
+    dataset: PtychoDataset,
     num_iterations: int = 10,
     method: Method = Method.rPIE,
     scaling_factor: int = 4,
 ):
-    num_images = images.shape[0]
+    num_images = len(dataset)
 
-    initial_object = np.mean(images, axis=0)
+    initial_object = np.mean(dataset.images, axis=0)
     target = rescale(initial_object, scaling_factor)
     f_target = fftshift(fft2(target))
 
