@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from leb.freeze.datasets import PtychoDataset
-from leb.freeze.fp import fp_recover, Method, SamplingParams
+from leb.freeze.fp import fp_recover, Method, SamplingParams, sampling_params
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def fake_dataset() -> PtychoDataset:
 
 @pytest.fixture
 def fake_params() -> SamplingParams:
-    return SamplingParams()
+    return sampling_params()
 
 
 def test_fp_recover(fake_dataset, fake_params):
