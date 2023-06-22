@@ -1,11 +1,14 @@
 from enum import Enum
+
 import numpy as np
 from numpy.fft import fft2, fftshift
 from skimage.transform import rescale
 
+
 class Method(Enum):
     rPIE = "rPIE"
     GD = "GD"
+
 
 def fp_recover(
     images: np.array, 
@@ -16,10 +19,8 @@ def fp_recover(
     num_images = images.shape[0]
 
     initial_object = np.mean(images, axis=0)
-    initial_object = rescale(initial_object, scaling_factor)
-    f_inital_object = fftshift(fft2(initial_object))
-
-
+    target = rescale(initial_object, scaling_factor)
+    f_target = fftshift(fft2(target))
 
     for i in range(num_iterations):
         for j in range(num_images):

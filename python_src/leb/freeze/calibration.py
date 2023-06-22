@@ -62,7 +62,7 @@ def calibrate_rectangular_matrix(
     led_coords[:, 0] = (led_coords[:, 0] - center_led[0]) * pitch[0]
     led_coords[:, 1] = (led_coords[:, 1] - center_led[1]) * pitch[1]
 
-    # Tranform the LED coordinates to the global coordinate system
+    # Transform the LED coordinates to the global coordinate system
     rotation_matrix = np.array([
         [np.cos(np.deg2rad(rot_deg)), -np.sin(np.deg2rad(rot_deg))],
         [np.sin(np.deg2rad(rot_deg)), np.cos(np.deg2rad(rot_deg))]
