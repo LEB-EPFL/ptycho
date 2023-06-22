@@ -21,23 +21,32 @@ def fp_recover(
     method: Method = Method.rPIE,
     scaling_factor: int = 4,
 ):
-    assert dataset.images.shape[1] == dataset.images.shape[2]
-    original_size_px = dataset.images.shape[1]
+    assert dataset.images.shape[1] == dataset.images.shape[2]  # Images must be square
 
     initial_object = np.mean(dataset.images, axis=0)
     target = rescale(initial_object, scaling_factor)
     target_fft = fftshift(fft2(target))
 
+    original_size_px = dataset.images.shape[1]
+    rescaled_size_px = target.shape[1]
+
     for i in range(num_iterations):
         for image, wavevector, led_index in dataset:
             # Obtain the rectangular slice from the target_fft to update
-            kx_px, ky_px = int(wavevector[0] // sampling_params.dk), int(
-                wavevector[1] // sampling_params.dk
-            )
+            kx_px = int(scaling_factor * wavevector[0] // sampling_params.dk)
+            ky_px = int(scaling_factor * wavevector[1] // sampling_params.dk)
             current_slice = target_fft[
-                (-original_size_px // 2 + ky_px) : (original_size_px // 2 + ky_px),
-                (-original_size_px // 2 + kx_px) : (original_size_px // 2 + kx_px),
+                ((rescaled_size_px - original_size_px) // 2 + ky_px) : (
+                    (rescaled_size_px + original_size_px) // 2 + ky_px
+                ),
+                ((rescaled_size_px - original_size_px) // 2 + kx_px) : (
+                    (rescaled_size_px + original_size_px) // 2 + kx_px
+                ),
             ]
+            assert current_slice.shape == (
+                original_size_px,
+                original_size_px,
+            ), f"Actual shape: {current_slice.shape}, expected shape: {(original_size_px, original_size_px)}"
 
 
 @dataclass
