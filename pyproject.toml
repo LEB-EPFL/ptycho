@@ -18,6 +18,7 @@ scikit-image = "*"
 zernike = "*"
 
 [tool.poetry.dev-dependencies]
+black = "*"
 pytest = "*"
 ruff = "*"
 
@@ -32,4 +33,7 @@ testpaths = [
 ]
 
 [tool.ruff]
+line-length = 100
+
+[tool.black]
 line-length = 100
