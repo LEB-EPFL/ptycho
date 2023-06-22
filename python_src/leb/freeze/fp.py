@@ -1,4 +1,4 @@
-"""The primary module for performing Fourier ptychographic reconstruction."""
+"""The primary module for performing Fourier ptychographic reconstructions."""
 from dataclasses import dataclass, field, InitVar
 from enum import Enum
 
@@ -16,23 +16,33 @@ class Method(Enum):
 
 def fp_recover(
     dataset: PtychoDataset,
+    sampling_params: "SamplingParams",
     num_iterations: int = 10,
     method: Method = Method.rPIE,
     scaling_factor: int = 4,
 ):
+    assert dataset.images.shape[1] == dataset.images.shape[2]
+    original_size_px = dataset.images.shape[1]
+
     initial_object = np.mean(dataset.images, axis=0)
     target = rescale(initial_object, scaling_factor)
     target_fft = fftshift(fft2(target))
 
     for i in range(num_iterations):
         for image, wavevector, led_index in dataset:
-            # Obtain the slice from the target_fft to update
-            pass
+            # Obtain the rectangular slice from the target_fft to update
+            kx_px, ky_px = int(wavevector[0] // sampling_params.dk), int(
+                wavevector[1] // sampling_params.dk
+            )
+            current_slice = target_fft[
+                (-original_size_px // 2 + ky_px) : (original_size_px // 2 + ky_px),
+                (-original_size_px // 2 + kx_px) : (original_size_px // 2 + kx_px),
+            ]
 
 
-@dataclass(frozen=True)
+@dataclass
 class SamplingParams:
-    """Compute the sampling parameters in the real and Fourier spaces.
+    """Sampling parameters in the real and Fourier spaces.
 
     Attributes
     ----------
@@ -44,7 +54,6 @@ class SamplingParams:
         The size of a pixel in the Fourier plane.
     pupil_radius_px : int
         Pupil radius in the Fourier plane in pixels.
-
 
     Parameters
     ----------
@@ -60,6 +69,7 @@ class SamplingParams:
         Numerical aperture of the objective.
 
     """
+
     num_px: InitVar[int] = 512
     px_size_um: InitVar[float] = 11
     wavelength_um: InitVar[float] = 0.488
@@ -72,12 +82,7 @@ class SamplingParams:
     pupil_radius_px: int = field(init=False)
 
     def __post_init__(
-        self,
-        num_px: int,
-        px_size_um: float,
-        wavelength_um: float,
-        mag: float,
-        na: float
+        self, num_px: int, px_size_um: float, wavelength_um: float, mag: float, na: float
     ) -> int:
         # The size of a pixel in the sample plane
         dx = px_size_um / mag
