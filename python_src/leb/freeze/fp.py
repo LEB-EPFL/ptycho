@@ -1,6 +1,7 @@
 """The primary module for performing Fourier ptychographic reconstructions."""
 from dataclasses import dataclass
 from enum import Enum
+from typing import Self
 
 import numpy as np
 from numpy.fft import fft2, fftshift
@@ -16,7 +17,7 @@ class Method(Enum):
 
 def fp_recover(
     dataset: PtychoDataset,
-    sampling_params: "SamplingParams",
+    pupil: "Pupil",
     num_iterations: int = 10,
     method: Method = Method.rPIE,
     scaling_factor: int = 4,
@@ -39,7 +40,7 @@ def fp_recover(
                 scaling_factor,
                 original_size_px,
                 rescaled_size_px,
-                sampling_params,
+                pupil,
             )
             assert current_slice.shape == (
                 original_size_px,
@@ -53,7 +54,7 @@ def slice_fft(
     scaling_factor: int,
     original_size_px: int,
     rescaled_size_px: int,
-    sampling_params: "SamplingParams",
+    sampling_params: "Pupil",
 ) -> np.ndarray:
     """Returns a rectangular slice of an upsampled Fourier transform of an image.
     
@@ -90,13 +91,13 @@ def slice_fft(
 
 
 @dataclass(frozen=True)
-class SamplingParams:
-    """Sampling parameters in the real and Fourier spaces.
+class Pupil:
+    """A complex pupil function of an optical system.
 
     Attributes
     ----------
-    dx : float
-        The size of a pixel in the sample plane.
+    p : np.ndarray
+        The complex pupil function.
     k_S : float
         Sampling angular frequency in the sample plane.
     dk : float
@@ -106,51 +107,58 @@ class SamplingParams:
 
     """
 
-    dx: float
+    p: np.ndarray
     k_S: float
     dk: float
     pupil_radius_px: int
 
+    @classmethod
+    def from_system_params(
+        cls,
+        num_px: int = 512,
+        px_size_um: float = 11,
+        wavelength_um: float = 0.488,
+        mag: float = 10.0,
+        na: float = 0.28,
+    ) -> Self:
+        """Computes an unaberrated pupil from the microscope system parameters.
 
-def sampling_params(
-    num_px: int = 512,
-    px_size_um: float = 11,
-    wavelength_um: float = 0.488,
-    mag: float = 10.0,
-    na: float = 0.28,
-) -> SamplingParams:
-    """Computes sampling parameters in the real and Fourier spaces.
+        Parameters
+        ----------
+        num_px : int
+            Number of pixels in the image (must be square).
+        px_size_um : float
+            Physical size of a pixel in microns.
+        wavelength_um : float
+            Wavelength of the illumination in microns.
+        mag : float
+            Magnification of the full imaging system.
+        na : float
+            Numerical aperture of the objective.
 
-    Parameters
-    ----------
-    num_px : int
-        Number of pixels in the image (must be square).
-    px_size_um : float
-        Physical size of a pixel in microns.
-    wavelength_um : float
-        Wavelength of the illumination in microns.
-    mag : float
-        Magnification of the full imaging system.
-    na : float
-        Numerical aperture of the objective.
+        Returns
+        -------
+        Self
+            An unaberrated pupil.
 
-    Returns
-    -------
-    SamplingParams
-        Sampling parameters in the real and Fourier spaces.
+        """
+        # The size of a pixel in the sample plane
+        dx = px_size_um / mag
 
-    """
-    # The size of a pixel in the sample plane
-    dx = px_size_um / mag
+        # Sampling angular frequency in the sample plane
+        k_S = 2 * np.pi / dx
 
-    # Sampling angular frequency in the sample plane
-    k_S = 2 * np.pi / dx
+        # The size of a pixel in the Fourier plane
+        dk = k_S / num_px
 
-    # The size of a pixel in the Fourier plane
-    dk = k_S / num_px
+        # Pupil radius in the Fourier plane in pixels
+        # R = NA / wavelength / dk
+        pupil_radius_px = int(na / wavelength_um / dk)
 
-    # Pupil radius in the Fourier plane in pixels
-    # R = NA / wavelength / dk
-    pupil_radius_px = int(na / wavelength_um / dk)
+        # Create a circular pupil
+        pupil = np.ones((num_px, num_px), dtype=np.complex128)
+        y, x = np.ogrid[-num_px // 2 : num_px // 2, -num_px // 2 : num_px // 2]
+        mask = x ** 2 + y ** 2 > pupil_radius_px ** 2
+        pupil[mask] = 0
 
-    return SamplingParams(dx, k_S, dk, pupil_radius_px)
+        return Pupil(pupil, k_S, dk, pupil_radius_px)

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from leb.freeze.datasets import PtychoDataset
-from leb.freeze.fp import fp_recover, Method, SamplingParams, sampling_params
+from leb.freeze.fp import fp_recover, Method, Pupil
 
 
 @pytest.fixture
@@ -15,13 +15,13 @@ def fake_dataset() -> PtychoDataset:
 
 
 @pytest.fixture
-def fake_params() -> SamplingParams:
-    return sampling_params()
+def fake_pupil() -> Pupil:
+    return Pupil.from_system_params()
 
 
-def test_fp_recover(fake_dataset, fake_params):
+def test_fp_recover(fake_dataset, fake_pupil):
     method = Method.rPIE
 
-    fp_recover(fake_dataset, fake_params, method=method)
+    fp_recover(fake_dataset, fake_pupil, method=method)
 
     raise NotImplementedError
