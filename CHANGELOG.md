@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added leb-freeze Python package to analyze Fourier ptychography data.
+- Created a Fourier Pytchographic reconstruction routine called `fp_recover` that is based on https://doi.org/10.1038/s41596-023-00829-4.
 
 ## [LED-Matrix-Controller-0.0.0]
 
