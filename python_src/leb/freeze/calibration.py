@@ -10,14 +10,14 @@ Calibration = dict[LEDIndexes, Wavevector]
 
 
 def calibrate_rectangular_matrix(
-        led_indexes: list[LEDIndexes],
-        center_led: LEDIndexes,
-        pitch: float | tuple[float, float],
-        lateral_offset: tuple[float, float] = (0.0, 0.0),
-        axial_offset: float = -50e3,
-        rot_deg: float = 0.0,
-        wavelength: float = 0.488
-    ) -> Calibration:
+    led_indexes: list[LEDIndexes],
+    center_led: LEDIndexes,
+    pitch: float | tuple[float, float],
+    lateral_offset: tuple[float, float] = (0.0, 0.0),
+    axial_offset: float = -50e3,
+    rot_deg: float = 0.0,
+    wavelength: float = 0.488,
+) -> Calibration:
     """Computes the wavevectors that correspond to a set of LED coordinates on a rectangular matrix.
 
     This function requires two coordinate systems. The first is the local coordinate system of the
@@ -29,7 +29,7 @@ def calibrate_rectangular_matrix(
 
     The wavevectors are computed after the coordinate system of LED indexes is converted to the
     global coordinate system.
-    
+
     Parameters
     ----------
     led_indexes : list[LEDIndexes]
@@ -52,7 +52,7 @@ def calibrate_rectangular_matrix(
         The center wavelength of light emitted from the LEDs.
 
     """
-    
+
     # Convert pitch to tuple if necessary
     if not isinstance(pitch, tuple):
         pitch = (pitch, pitch)
@@ -62,17 +62,19 @@ def calibrate_rectangular_matrix(
     led_coords[:, 0] = (led_coords[:, 0] - center_led[0]) * pitch[0]
     led_coords[:, 1] = (led_coords[:, 1] - center_led[1]) * pitch[1]
 
-    # Tranform the LED coordinates to the global coordinate system
-    rotation_matrix = np.array([
-        [np.cos(np.deg2rad(rot_deg)), -np.sin(np.deg2rad(rot_deg))],
-        [np.sin(np.deg2rad(rot_deg)), np.cos(np.deg2rad(rot_deg))]
-    ])
+    # Transform the LED coordinates to the global coordinate system
+    rotation_matrix = np.array(
+        [
+            [np.cos(np.deg2rad(rot_deg)), -np.sin(np.deg2rad(rot_deg))],
+            [np.sin(np.deg2rad(rot_deg)), np.cos(np.deg2rad(rot_deg))],
+        ]
+    )
     led_coords = np.matmul(led_coords, rotation_matrix) + np.array(lateral_offset)
 
     # Compute the wavevectors; direction cosines are the negative because the matrix is behind the
     # sample.
     k = 2 * np.pi / wavelength
-    R = np.sqrt(led_coords[:, 0]**2 + led_coords[:, 1]**2 + axial_offset**2)
+    R = np.sqrt(led_coords[:, 0] ** 2 + led_coords[:, 1] ** 2 + axial_offset**2)
     dir_cos_x = -led_coords[:, 0] / R
     dir_cos_y = -led_coords[:, 1] / R
     kx = k * dir_cos_x
@@ -80,5 +82,5 @@ def calibrate_rectangular_matrix(
     kz = -k * axial_offset / R
 
     assert_almost_equal(kx**2 + ky**2 + kz**2, k**2)
-    
+
     return {idx: (kx[i], ky[i], kz[i]) for i, idx in enumerate(led_indexes)}

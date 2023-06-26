@@ -42,6 +42,12 @@ From inside the poetry shell:
 ruff check .
 ```
 
+To reformat the code automatically:
+
+```console
+black .
+```
+
 ## LED Matrix Controller - Arduino code to control an LED matrix
 
 See [arduino_src/led_matrix_controller/README.md](arduino_src/led_matrix_controller/README.md).
