@@ -1,4 +1,5 @@
 """The primary module for performing Fourier ptychographic reconstructions."""
+from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 from typing import Self
@@ -27,6 +28,7 @@ def fp_recover(
     initial_object = np.mean(dataset.images, axis=0)
     target = rescale(initial_object, scaling_factor)
     target_fft = fftshift(fft2(target))
+    target_pupil = deepcopy(pupil)
 
     original_size_px = dataset.images.shape[1]
     rescaled_size_px = target.shape[1]
@@ -47,6 +49,9 @@ def fp_recover(
                 original_size_px,
             ), f"Actual shape: {current_slice.shape}, expected shape: {(original_size_px, original_size_px)}"
 
+            # Filter the slice with the pupil function
+            current_slice *= target_pupil.p
+
 
 def slice_fft(
     image_fft: np.ndarray,
@@ -54,7 +59,7 @@ def slice_fft(
     scaling_factor: int,
     original_size_px: int,
     rescaled_size_px: int,
-    sampling_params: "Pupil",
+    pupil: "Pupil",
 ) -> np.ndarray:
     """Returns a rectangular slice of an upsampled Fourier transform of an image.
     
@@ -70,16 +75,16 @@ def slice_fft(
         Size of the original image in pixels.
     rescaled_size_px : int
         Size of the rescaled image in pixels.
-    sampling_params : SamplingParams
-        Sampling parameters in the real and Fourier spaces.
+    pupil : Pupil
+        Pupil function of the optical system.
 
     Returns
     -------
     np.ndarray
         A rectangular slice of an upsampled Fourier transform of an image.
     """
-    kx_px = int(scaling_factor * wavevector[0] // sampling_params.dk)
-    ky_px = int(scaling_factor * wavevector[1] // sampling_params.dk)
+    kx_px = int(scaling_factor * wavevector[0] // pupil.dk)
+    ky_px = int(scaling_factor * wavevector[1] // pupil.dk)
     return image_fft[
         ((rescaled_size_px - original_size_px) // 2 + ky_px) : (
             (rescaled_size_px + original_size_px) // 2 + ky_px
