@@ -5,9 +5,26 @@ from skimage.color import rgb2gray
 from skimage.data import astronaut, camera
 from skimage.transform import resize
 
+from leb.freeze.calibration import Calibration, calibrate_rectangular_matrix
 
-def fp_simulation():
+
+def fp_simulation(
+    gt_img_size: tuple[int, int] = (256, 256),
+    scaling_factor: int = 4,
+    px_size_um: float = 11,
+    wavelength_um: float = 0.488e-6,
+    mag: float = 10.0,
+    na: float = 0.288,
+    num_leds: int = 128,
+    center_led: tuple[float, float] = (13, 15),
+    led_pitch_mm: tuple[float, float] = (4, 4),
+    axial_offset_mm: float = -50,
+    
+):
     gt = ground_truth()
+
+    # Get the wavevectors corresponding to the LEDs
+    calibrate_rectangular_matrix
 
 
 def ground_truth(
