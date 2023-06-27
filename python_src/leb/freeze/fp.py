@@ -5,24 +5,26 @@ from enum import Enum
 from typing import Self
 
 import numpy as np
-from numpy.fft import fft2, fftshift
+from numpy.fft import fft2, fftshift, ifft2, ifftshift
+from numpy.typing import NDArray
 from skimage.transform import rescale
 
 from leb.freeze.datasets import PtychoDataset
 
 
-class Method(Enum):
+class PupilRecoveryMethod(Enum):
     rPIE = "rPIE"
-    GD = "GD"
+    GD = "Gradient Descent"
 
 
 def fp_recover(
     dataset: PtychoDataset,
     pupil: "Pupil",
     num_iterations: int = 10,
-    method: Method = Method.rPIE,
+    method: PupilRecoveryMethod = PupilRecoveryMethod.rPIE,
     scaling_factor: int = 4,
-):
+    alpha_O: float = 1.0,
+) -> NDArray[np.complex128]:
     assert dataset.images.shape[1] == dataset.images.shape[2]  # Images must be square
 
     initial_object = np.mean(dataset.images, axis=0)
@@ -34,39 +36,68 @@ def fp_recover(
     rescaled_size_px = target.shape[1]
 
     for i in range(num_iterations):
-        for image, wavevector, led_index in dataset:
+        for image, wavevector, _ in dataset:
             # Obtain the rectangular slice from the target_fft centered at kx, ky to update
-            current_slice = slice_fft(
+            # TODO Verify that k-space sampling is correct. Waiting on response from S. Jiang...
+            current_slice_fft = slice_fft(
                 target_fft,
+                pupil,
                 wavevector,
                 scaling_factor,
                 original_size_px,
                 rescaled_size_px,
-                pupil,
             )
-            assert current_slice.shape == (
+            assert current_slice_fft.shape == (
                 original_size_px,
                 original_size_px,
-            ), f"Actual shape: {current_slice.shape}, expected shape: {(original_size_px, original_size_px)}"
+            ), f"Actual shape: {current_slice_fft.shape}, expected shape: {(original_size_px, original_size_px)}"
 
-            # Filter the slice with the pupil function
-            current_slice *= target_pupil.p
+            # Filter the slice with the pupil function.
+            # A copy of the slice is implicitly made to avoid modifying the original slice.
+            low_res_img_fft = current_slice_fft * target_pupil.p
+
+            # Compute the low resolution image from the current slice
+            # TODO Verify that multiplication by dk **2 is correct.
+            low_res_img = target_pupil.dk**2 * ifft2(ifftshift(low_res_img_fft))
+
+            # Replace the amplitude of the low res. image with the measured amplitude.
+            # Leave the phase unchanged.
+            low_res_img = np.abs(image) * np.exp(1j * np.angle(low_res_img))
+
+            # Update the target_fft with the new slice data using the rPIE algorithm
+            next_low_res_img_fft = fftshift(fft2(low_res_img))
+            current_slice_fft += (
+                np.conj(target_pupil.p)
+                / (
+                    (1 - alpha_O) * abs(target_pupil.p) ** 2
+                    + alpha_O * np.max(np.abs(target_pupil.p) ** 2)
+                )
+                * (next_low_res_img_fft - current_slice_fft)
+            )
+
+    # Compute the final complex object
+    # TODO Verify that multiplication by dk **2 is correct.
+    return target_pupil.dk ** 2 * ifft2(ifftshift(target_fft))
 
 
 def slice_fft(
     image_fft: np.ndarray,
+    pupil: "Pupil",
     wavevector: np.ndarray,
     scaling_factor: int,
     original_size_px: int,
     rescaled_size_px: int,
-    pupil: "Pupil",
 ) -> np.ndarray:
     """Returns a rectangular slice of an upsampled Fourier transform of an image.
-    
+
+    The slice is an in-memory view of the data, i.e. no copy is made.
+
     Parmeters
     ---------
     image_fft : np.ndarray
         An upsampled Fourier transform of an image.
+    pupil : Pupil
+        Pupil function of the optical system.
     wavevector : np.ndarray
         Wavevector of the illumination.
     scaling_factor : int
@@ -75,8 +106,6 @@ def slice_fft(
         Size of the original image in pixels.
     rescaled_size_px : int
         Size of the rescaled image in pixels.
-    pupil : Pupil
-        Pupil function of the optical system.
 
     Returns
     -------
@@ -163,7 +192,7 @@ class Pupil:
         # Create a circular pupil
         pupil = np.ones((num_px, num_px), dtype=np.complex128)
         y, x = np.ogrid[-num_px // 2 : num_px // 2, -num_px // 2 : num_px // 2]
-        mask = x ** 2 + y ** 2 > pupil_radius_px ** 2
+        mask = x**2 + y**2 > pupil_radius_px**2
         pupil[mask] = 0
 
         return Pupil(pupil, k_S, dk, pupil_radius_px)
