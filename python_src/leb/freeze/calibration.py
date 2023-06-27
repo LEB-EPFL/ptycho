@@ -1,7 +1,11 @@
 """Calibration routines for Fourier Ptychography"""
 
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_array_almost_equal_nulp
+
+# Used to test wavevector component squared magnitudes sum to k
+# See https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_array_almost_equal_nulp.html#numpy.testing.assert_array_almost_equal_nulp
+MAX_NULP = 3
 
 LEDIndexes = tuple[int, int]
 Wavevector = tuple[float, float, float]
@@ -81,6 +85,6 @@ def calibrate_rectangular_matrix(
     ky = k * dir_cos_y
     kz = -k * axial_offset / R
 
-    assert_almost_equal(kx**2 + ky**2 + kz**2, k**2)
+    assert_array_almost_equal_nulp(kx**2 + ky**2 + kz**2, k**2*np.ones_like(kx), MAX_NULP)
 
     return {idx: (kx[i], ky[i], kz[i]) for i, idx in enumerate(led_indexes)}
