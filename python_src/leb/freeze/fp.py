@@ -76,7 +76,7 @@ def fp_recover(
                     (1 - alpha_O) * abs(target_pupil.p) ** 2
                     + alpha_O * np.max(np.abs(target_pupil.p) ** 2)
                 )
-                * (next_low_res_img_fft - current_slice_fft)
+                * (next_low_res_img_fft - low_res_img_fft)
             )
 
             # Update the pupil function
