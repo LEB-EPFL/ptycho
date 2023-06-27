@@ -81,4 +81,5 @@ It is much faster to have the Arduino draw the patterns. When you want a new pat
 2. Add a new verb to the `Command` enum class that serves as the name of the new command.
 3. Extend the `parseMessage` function and add a `parseXXXArgs` function to process your new command and its arguments, where `XXX` is the new verb's name.
 4. Create a function in `drawing.cpp` that serves as the actual drawing logic.
-5. Extend the `doAction` function to execute the code from the previous step that is associated with the new command. 
+5. Extend the `doAction` function to execute the code from the previous step that is associated with the new command.
+6. Update the `printHelp` function with your new command. 
