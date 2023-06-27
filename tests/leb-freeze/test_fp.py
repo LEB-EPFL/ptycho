@@ -23,8 +23,6 @@ def fake_pupil() -> Pupil:
 
 
 def test_fp_recover(fake_dataset, fake_pupil):
-    method = PupilRecoveryMethod.rPIE
+    pupil_recovery_method = PupilRecoveryMethod.NONE
 
-    fp_recover(fake_dataset, fake_pupil, method=method)
-
-    raise NotImplementedError
+    fp_recover(fake_dataset, fake_pupil, pupil_recovery_method=pupil_recovery_method)

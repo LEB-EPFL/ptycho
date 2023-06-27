@@ -15,13 +15,14 @@ from leb.freeze.datasets import PtychoDataset
 class PupilRecoveryMethod(Enum):
     rPIE = "rPIE"
     GD = "Gradient Descent"
+    NONE = "None"
 
 
 def fp_recover(
     dataset: PtychoDataset,
     pupil: "Pupil",
     num_iterations: int = 10,
-    method: PupilRecoveryMethod = PupilRecoveryMethod.rPIE,
+    pupil_recovery_method: PupilRecoveryMethod = PupilRecoveryMethod.NONE,
     scaling_factor: int = 4,
     alpha_O: float = 1.0,
 ) -> NDArray[np.complex128]:
@@ -50,7 +51,10 @@ def fp_recover(
             assert current_slice_fft.shape == (
                 original_size_px,
                 original_size_px,
-            ), f"Actual shape: {current_slice_fft.shape}, expected shape: {(original_size_px, original_size_px)}"
+            ), (
+                f"Actual shape: {current_slice_fft.shape}, expected shape: "
+                f"{(original_size_px, original_size_px)}"
+            )
 
             # Filter the slice with the pupil function.
             # A copy of the slice is implicitly made to avoid modifying the original slice.
@@ -75,9 +79,18 @@ def fp_recover(
                 * (next_low_res_img_fft - current_slice_fft)
             )
 
+            # Update the pupil function
+            match pupil_recovery_method:
+                case PupilRecoveryMethod.rPIE:
+                    raise NotImplementedError
+                case PupilRecoveryMethod.GD:
+                    raise NotImplementedError
+                case PupilRecoveryMethod.NONE:
+                    continue
+
     # Compute the final complex object
     # TODO Verify that multiplication by dk **2 is correct.
-    return target_pupil.dk ** 2 * ifft2(ifftshift(target_fft))
+    return target_pupil.dk**2 * ifft2(ifftshift(target_fft))
 
 
 def slice_fft(
