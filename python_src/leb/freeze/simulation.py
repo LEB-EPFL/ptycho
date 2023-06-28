@@ -8,7 +8,7 @@ from skimage.transform import resize
 
 from leb.freeze.calibration import Calibration, calibrate_rectangular_matrix
 from leb.freeze.datasets import FPDataset
-from leb.freeze.fp import Pupil, fp_recover, slice_fft
+from leb.freeze.fp import Pupil, slice_fft
 
 
 def fp_simulation(
@@ -18,7 +18,7 @@ def fp_simulation(
     wavelength_um: float = 0.488,
     mag: float = 10.0,
     na: float = 0.288,
-    num_leds: tuple[int, int] = (5, 5),
+    num_leds: tuple[int, int] = (16, 16),
     center_led: tuple[float, float] = (8, 8),
     led_pitch_mm: tuple[float, float] = (4, 4),
     axial_offset_mm: float = -50,
@@ -75,18 +75,14 @@ def generate_simulated_images(
     """Generates simulated images from a ground truth object."""
     gt_fft = fftshift(fft2(gt))
 
-    gt_size_px = gt.shape[0]
     dataset_size_px = pupil.p.shape[0]
-    scaling_factor = gt_size_px // dataset_size_px
     num_images = len(calibration)
 
     images = np.empty((num_images, dataset_size_px, dataset_size_px))
     for image_num, item in enumerate(calibration.items()):
         _, wavevector = item
         # Obtain the rectangular slice from the FFT centered at kx, ky.
-        # First convert (kx, ky) into pixels using a k-space spacing corresponding to the
-        # size of the groundtruth Fourier transform, i.e. pupil.dk / scaling_factor.
-        kx_ky_px = np.round(scaling_factor * np.array(wavevector[:2]) / pupil.dk).astype(int)
+        kx_ky_px = np.round(np.array(wavevector[:2]) / pupil.dk).astype(int)
         current_slice_fft = slice_fft(
             gt_fft,
             kx_ky_px,

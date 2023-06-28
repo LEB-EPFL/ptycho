@@ -13,8 +13,7 @@ def test_simulation():
 
 
 def test_simulation_too_little_upsampling():
-    
-    dataset, pupil = fp_simulation()
-    
+    dataset, pupil = fp_simulation(upsampling_factor=4)
+
     with pytest.raises(FPRecoveryError):
         fp_recover(dataset, pupil, upsampling_factor=2)

@@ -32,6 +32,8 @@ def fp_recover(
 ) -> NDArray[np.complex128]:
     assert dataset.images.shape[1] == dataset.images.shape[2]  # Images must be square
 
+    # Though we are upsampling the target, the pupil sampling rate dk remains unchanged because
+    # the upsampling is performed to add pixels to the FFT, not to improve k-space resolution!
     initial_object = np.mean(dataset.images, axis=0)
     target = rescale(initial_object, upsampling_factor)
     target_fft = fftshift(fft2(target))
@@ -43,9 +45,8 @@ def fp_recover(
         for image, wavevector, _ in dataset:
             # Obtain the rectangular slice from the target_fft centered at kx, ky to update.
             # First convert (kx, ky) into pixels using a k-space spacing corresponding to the
-            # size of the upsampled FFT, i.e. pupil.dk / scaling_factor.
-            # TODO Verify that k-space sampling is correct. Waiting on response from S. Jiang...
-            kx_ky_px = np.round(upsampling_factor * wavevector[0:2] / pupil.dk).astype(int)
+            # size of the upsampled FFT, i.e. pupil.dk.
+            kx_ky_px = np.round(wavevector[0:2] / pupil.dk).astype(int)
             current_slice_fft = slice_fft(
                 target_fft,
                 kx_ky_px,
