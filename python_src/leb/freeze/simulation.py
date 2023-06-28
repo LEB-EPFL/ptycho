@@ -98,7 +98,7 @@ def generate_simulated_images(
 
         images[image_num] = current_image
 
-        return images
+    return images
 
 
 def ground_truth(

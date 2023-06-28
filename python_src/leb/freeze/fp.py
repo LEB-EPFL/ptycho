@@ -44,8 +44,6 @@ def fp_recover(
     for i in range(num_iterations):
         for image, wavevector, _ in dataset:
             # Obtain the rectangular slice from the target_fft centered at kx, ky to update.
-            # First convert (kx, ky) into pixels using a k-space spacing corresponding to the
-            # size of the upsampled FFT, i.e. pupil.dk.
             kx_ky_px = np.round(wavevector[0:2] / pupil.dk).astype(int)
             current_slice_fft = slice_fft(
                 target_fft,
