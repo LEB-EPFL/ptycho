@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.testing import assert_almost_equal
+import pytest
 
 from leb.freeze.calibration import calibrate_rectangular_matrix
 
@@ -73,3 +74,21 @@ def test_calibrate_rectangular_matrix_off_center_rotated():
     )
 
     assert_almost_equal(k_actual, k_expected)
+
+
+@pytest.mark.parametrize(
+    "sort, expected", [(True, [(0, 0), (0, 1), (1, 1)]), (False, [(1, 1), (0, 1), (0, 0)])]
+)
+def test_calibrate_rectangular_matrix_sorted_results(sort, expected):
+    """Test that the results are sorted by the wavevector's angle to the z-axis."""
+    indexes = [(1, 1), (0, 1), (0, 0)]
+    center_led = (0, 0)
+    pitch = 4e3  # 4 mm
+    axial_offset = -50e3  # = 5 cm
+    wavelength = 0.488  # 488 nm
+
+    ks = calibrate_rectangular_matrix(
+        indexes, center_led, pitch, axial_offset=axial_offset, wavelength=wavelength, sort=sort
+    )
+
+    assert list(ks.keys()) == expected

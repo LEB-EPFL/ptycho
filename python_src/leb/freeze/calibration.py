@@ -3,7 +3,7 @@
 import numpy as np
 from numpy.testing import assert_array_almost_equal_nulp
 
-# Used to test wavevector component squared magnitudes sum to k
+# Used to test whether wavevector component squared magnitudes sum to k
 # See https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_array_almost_equal_nulp.html#numpy.testing.assert_array_almost_equal_nulp
 MAX_NULP = 3
 
@@ -21,6 +21,7 @@ def calibrate_rectangular_matrix(
     axial_offset: float = -50e3,
     rot_deg: float = 0.0,
     wavelength: float = 0.488,
+    sort: bool = False,
 ) -> Calibration:
     """Computes the wavevectors that correspond to a set of LED coordinates on a rectangular matrix.
 
@@ -54,6 +55,10 @@ def calibrate_rectangular_matrix(
         surface with the LEDs.
     wavelength : float
         The center wavelength of light emitted from the LEDs.
+    sort : bool
+        If True, then the results are sorted from lowest (kx, ky) magnitudes to highest. If False,
+        then the results are returned in the same order as the input. Sorting helps ensures that
+        the smallest angle illuminations are computed first.
 
     """
 
@@ -85,6 +90,14 @@ def calibrate_rectangular_matrix(
     ky = k * dir_cos_y
     kz = -k * axial_offset / R
 
-    assert_array_almost_equal_nulp(kx**2 + ky**2 + kz**2, k**2*np.ones_like(kx), MAX_NULP)
+    # TODO Modify direction cosines to account for the refraction in the glass.
 
-    return {idx: (kx[i], ky[i], kz[i]) for i, idx in enumerate(led_indexes)}
+    assert_array_almost_equal_nulp(kx**2 + ky**2 + kz**2, k**2 * np.ones_like(kx), MAX_NULP)
+
+    results = {idx: (kx[i], ky[i], kz[i]) for i, idx in enumerate(led_indexes)}
+
+    if sort:
+        return dict(
+            sorted(results.items(), key=lambda item: np.sqrt(item[1][0] ** 2 + item[1][1] ** 2))
+        )
+    return results

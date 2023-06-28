@@ -1,5 +1,6 @@
 """Simulation of a Fourier Ptychography dataset."""
 import numpy as np
+from numpy.fft import fft2, fftshift, ifft2, ifftshift
 from numpy.typing import NDArray
 from skimage.color import rgb2gray
 from skimage.data import astronaut, camera
@@ -7,7 +8,7 @@ from skimage.transform import resize
 
 from leb.freeze.calibration import Calibration, calibrate_rectangular_matrix
 from leb.freeze.datasets import PtychoDataset
-from leb.freeze.fp import Pupil
+from leb.freeze.fp import Pupil, slice_fft
 
 
 def fp_simulation(
@@ -37,12 +38,47 @@ def fp_simulation(
         wavelength=wavelength_um,
     )
 
-    # Create the simulated pupil
+    # Create the simulated pupil.
+    # The images and the pupil will be scaling_factor times smaller than the ground truth in each
+    # dimension.
     dataset_size = int(gt_img_size / scaling_factor)
-    pupil = Pupil.from_system_params(num_px=dataset_size, px_size_um=px_size_um, wavelength_um=wavelength_um, mag=mag, na=na)
+    pupil = Pupil.from_system_params(
+        num_px=dataset_size, px_size_um=px_size_um, wavelength_um=wavelength_um, mag=mag, na=na
+    )
 
-    # Create the simulated dataset
-    # TODO
+
+def generate_simulated_images(
+    gt: NDArray[np.complex128], calibration: Calibration, pupil: Pupil, scaling_factor: int = 4
+) -> NDArray[np.float64]:
+    """Generates simulated images from a ground truth object."""
+    gt_fft = fftshift(fft2(gt))
+
+    original_size_px = gt.shape[0]
+    rescaled_size_px = int(original_size_px / scaling_factor)
+    num_images = len(calibration)
+
+    images = np.empty((num_images, rescaled_size_px, rescaled_size_px))
+    for image_num, led_indexes, wavevector in enumerate(calibration.items()):
+        # Obtain the rectangular slice from the FFT centered at kx, ky
+        current_slice_fft = slice_fft(
+            gt_fft,
+            pupil,
+            np.array(wavevector),
+            scaling_factor,
+            original_size_px,
+            rescaled_size_px,
+        )
+
+        # Copy the slice, then low pass filter it with the pupil
+        current_slice_fft = current_slice_fft.copy()
+        current_slice_fft *= pupil  # TODO Add abberrations here
+
+        # Inverse FFT to obtain the image
+        current_image = pupil.dk**2 * np.abs(ifft2(ifftshift(current_slice_fft)))
+
+        images[image_num] = current_image
+
+        return images
 
 
 def ground_truth(
