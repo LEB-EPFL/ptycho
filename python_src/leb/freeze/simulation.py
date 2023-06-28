@@ -13,7 +13,7 @@ from leb.freeze.fp import Pupil, fp_recover, slice_fft
 
 def fp_simulation(
     gt_img_size: int = 256,
-    scaling_factor: int = 4,
+    upsampling_factor: int = 4,
     px_size_um: float = 11,
     wavelength_um: float = 0.488,
     mag: float = 10.0,
@@ -22,7 +22,7 @@ def fp_simulation(
     center_led: tuple[float, float] = (8, 8),
     led_pitch_mm: tuple[float, float] = (4, 4),
     axial_offset_mm: float = -50,
-):
+) -> tuple[FPDataset, Pupil]:
     gt = ground_truth()
 
     # Compute the LED indexes
@@ -41,7 +41,7 @@ def fp_simulation(
     # Create the simulated pupil and images.
     # The images and the pupil will be scaling_factor times smaller than the ground truth in each
     # dimension.
-    dataset_size = int(gt_img_size / scaling_factor)
+    dataset_size = int(gt_img_size / upsampling_factor)
     pupil = Pupil.from_system_params(
         num_px=dataset_size, px_size_um=px_size_um, wavelength_um=wavelength_um, mag=mag, na=na
     )
@@ -53,8 +53,7 @@ def fp_simulation(
         calibration=calibration,
     )
 
-    # Recover the ground truth
-    _ = fp_recover(dataset, pupil, upsampling_factor=scaling_factor)
+    return (dataset, pupil)
 
 
 def generate_led_indexes(
