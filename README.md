@@ -6,6 +6,18 @@ Hardware control and image analysis code for Mr. Freeze, the LEB plunge freezer.
 
 ## leb-freeze - A Python package for Fourier Ptychography
 
+### Getting Started
+
+```python
+from leb.freeze import fp_simulation, fp_recover
+
+# Simulate a Fourier Ptychography dataset
+(dataset, pupil, ground_truth) = fp_simulation()
+
+# Recover the complex object function
+results = fp_recover(dataset=dataset, pupil=pupil)
+```
+
 ### Development
 
 #### Setup the development environment

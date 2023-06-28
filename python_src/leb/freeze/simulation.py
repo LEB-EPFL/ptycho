@@ -22,7 +22,7 @@ def fp_simulation(
     center_led: tuple[float, float] = (8, 8),
     led_pitch_mm: tuple[float, float] = (4, 4),
     axial_offset_mm: float = -50,
-) -> tuple[FPDataset, Pupil]:
+) -> tuple[FPDataset, Pupil, NDArray[np.complex128]]:
     gt = ground_truth()
 
     # Compute the LED indexes
@@ -53,7 +53,7 @@ def fp_simulation(
         calibration=calibration,
     )
 
-    return (dataset, pupil)
+    return (dataset, pupil, gt)
 
 
 def generate_led_indexes(
