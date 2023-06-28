@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from leb.freeze.datasets import PtychoDataset
+from leb.freeze.datasets import FPDataset
 
 
 @pytest.fixture
@@ -18,19 +18,19 @@ def test_ptychodataset(fake_data):
     """Test the PtychoDataset class."""
     images, wavevectors, led_indexes = fake_data
 
-    dataset = PtychoDataset(images, wavevectors, led_indexes)
+    dataset = FPDataset(images, wavevectors, led_indexes)
 
     assert len(dataset) == len(images)
 
 
 def test_ptychodataset_can_index_into_dataset(fake_data):
-    dataset = PtychoDataset(*fake_data)
+    dataset = FPDataset(*fake_data)
 
     image_1, wavevector_1, led_index_1 = dataset[1]
 
 
 def test_ptychodataset_index_out_of_bounds(fake_data):
-    dataset = PtychoDataset(*fake_data)
+    dataset = FPDataset(*fake_data)
     index = len(dataset) + 1
 
     with pytest.raises(IndexError):
@@ -38,7 +38,7 @@ def test_ptychodataset_index_out_of_bounds(fake_data):
 
 
 def test_pytchodataset_is_iterable(fake_data):
-    dataset = PtychoDataset(*fake_data)
+    dataset = FPDataset(*fake_data)
 
     for image, wavevector, led_index in dataset:
         pass
@@ -49,7 +49,7 @@ def test_ptychodataset_images_wrong_ndim(fake_data):
     images = images[:, np.newaxis]
 
     with pytest.raises(ValueError):
-        PtychoDataset(images, wavevectors, led_indexes)
+        FPDataset(images, wavevectors, led_indexes)
 
 
 def test_ptychodataset_images_not_square(fake_data):
@@ -57,7 +57,7 @@ def test_ptychodataset_images_not_square(fake_data):
     images = images[:, :, 0:-1]
 
     with pytest.raises(ValueError):
-        PtychoDataset(images, wavevectors, led_indexes)
+        FPDataset(images, wavevectors, led_indexes)
 
 
 def test_ptychodataset_wavevectors_wrong_ndim(fake_data):
@@ -65,7 +65,7 @@ def test_ptychodataset_wavevectors_wrong_ndim(fake_data):
     wavevectors = wavevectors[:, np.newaxis]
 
     with pytest.raises(ValueError):
-        PtychoDataset(images, wavevectors, led_indexes)
+        FPDataset(images, wavevectors, led_indexes)
 
 
 def test_ptychodataset_wavevectors_not_3d(fake_data):
@@ -73,7 +73,7 @@ def test_ptychodataset_wavevectors_not_3d(fake_data):
     wavevectors = wavevectors[:, 0:-1]
 
     with pytest.raises(ValueError):
-        PtychoDataset(images, wavevectors, led_indexes)
+        FPDataset(images, wavevectors, led_indexes)
 
 
 def test_ptychodataset_led_indexes_wrong_ndim(fake_data):
@@ -81,7 +81,7 @@ def test_ptychodataset_led_indexes_wrong_ndim(fake_data):
     led_indexes = led_indexes[:, np.newaxis]
 
     with pytest.raises(ValueError):
-        PtychoDataset(images, wavevectors, led_indexes)
+        FPDataset(images, wavevectors, led_indexes)
 
 
 def test_ptychodataset_led_indexes_not_2d(fake_data):
@@ -89,7 +89,7 @@ def test_ptychodataset_led_indexes_not_2d(fake_data):
     led_indexes = led_indexes[:, 0:-1]
 
     with pytest.raises(ValueError):
-        PtychoDataset(images, wavevectors, led_indexes)
+        FPDataset(images, wavevectors, led_indexes)
 
 
 def test_ptychodataset_different_number_of_images(fake_data):
@@ -97,7 +97,7 @@ def test_ptychodataset_different_number_of_images(fake_data):
     images = images[0:-1]
 
     with pytest.raises(ValueError):
-        PtychoDataset(images, wavevectors, led_indexes)
+        FPDataset(images, wavevectors, led_indexes)
 
 
 def test_ptychodataset_different_number_of_wavevectors(fake_data):
@@ -105,7 +105,7 @@ def test_ptychodataset_different_number_of_wavevectors(fake_data):
     wavevectors = wavevectors[0:-1]
 
     with pytest.raises(ValueError):
-        PtychoDataset(images, wavevectors, led_indexes)
+        FPDataset(images, wavevectors, led_indexes)
 
 
 def test_ptychodataset_different_number_of_led_indexes(fake_data):
@@ -113,4 +113,4 @@ def test_ptychodataset_different_number_of_led_indexes(fake_data):
     led_indexes = led_indexes[0:-1]
 
     with pytest.raises(ValueError):
-        PtychoDataset(images, wavevectors, led_indexes)
+        FPDataset(images, wavevectors, led_indexes)

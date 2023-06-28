@@ -1,11 +1,14 @@
 """Data structures and methods for representing Fourier Ptychographic datasets."""
 from dataclasses import dataclass
+from typing import Self
 
 import numpy as np
 
+from leb.freeze.calibration import Calibration
+
 
 @dataclass(frozen=True)
-class PtychoDataset:
+class FPDataset:
     images: np.ndarray
     wavevectors: np.ndarray
     led_indexes: np.ndarray
@@ -61,3 +64,10 @@ class PtychoDataset:
 
     def __iter__(self):
         return (self[i] for i in range(len(self)))
+
+    @classmethod
+    def from_calibration(cls, images: np.ndarray, calibration: Calibration) -> Self:
+        led_indexes = np.array(list(calibration.keys()))
+        wavevectors = np.array(list(calibration.values()))
+
+        return cls(images=images, wavevectors=wavevectors, led_indexes=led_indexes)

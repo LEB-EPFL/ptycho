@@ -16,11 +16,11 @@ Calibration = dict[LEDIndexes, Wavevector]
 def calibrate_rectangular_matrix(
     led_indexes: list[LEDIndexes],
     center_led: LEDIndexes,
-    pitch: float | tuple[float, float],
-    lateral_offset: tuple[float, float] = (0.0, 0.0),
-    axial_offset: float = -50e3,
+    pitch_mm: float | tuple[float, float],
+    lateral_offset_mm: tuple[float, float] = (0.0, 0.0),
+    axial_offset_mm: float = -50e3,
     rot_deg: float = 0.0,
-    wavelength: float = 0.488,
+    wavelength_um: float = 0.488,
     sort: bool = False,
 ) -> Calibration:
     """Computes the wavevectors that correspond to a set of LED coordinates on a rectangular matrix.
@@ -41,35 +41,40 @@ def calibrate_rectangular_matrix(
         The (col, row) indexes of the LEDs in the matrix.
     center_led : LEDIndexes
         The (col, row) indexes of the center LED.
-    pitch : float | tuple[float, float]
+    pitch_mm : float | tuple[float, float]
         The horizontal/vertical distance between LEDs. If a single number, then the pitch is
         assumed uniform in the horizontal and vertical directions. If a tuple, then the first
         number is the horizontal (x) distance and the second is the vertical (y) distance.
-    lateral_offset : tuple[float, float]
+    lateral_offset_mm : tuple[float, float]
         The (x, y) offset from the origin of the global coordinate system to the origin of the
         matrix coordinate system.
-    axial_offset : float
+    axial_offset_mm : float
         The offest from the LED matrix to the sample, which lies at z = 0.
     rot_deg : float | tuple[float, float]
         The rotation of the matrix about its central z-axis in degrees. +z points away from the
         surface with the LEDs.
-    wavelength : float
+    wavelength_um : float
         The center wavelength of light emitted from the LEDs.
     sort : bool
         If True, then the results are sorted from lowest (kx, ky) magnitudes to highest. If False,
         then the results are returned in the same order as the input. Sorting helps ensures that
         the smallest angle illuminations are computed first.
 
+    Returns
+    -------
+    Calibration
+        A dictionary mapping LED indexes to wavevectors in radians per micron.
+
     """
 
     # Convert pitch to tuple if necessary
-    if not isinstance(pitch, tuple):
-        pitch = (pitch, pitch)
+    if not isinstance(pitch_mm, tuple):
+        pitch_mm = (pitch_mm, pitch_mm)
 
     # Compute the LED x, y coordinates from the LED indexes
     led_coords = np.array(led_indexes)
-    led_coords[:, 0] = (led_coords[:, 0] - center_led[0]) * pitch[0]
-    led_coords[:, 1] = (led_coords[:, 1] - center_led[1]) * pitch[1]
+    led_coords[:, 0] = (led_coords[:, 0] - center_led[0]) * pitch_mm[0]
+    led_coords[:, 1] = (led_coords[:, 1] - center_led[1]) * pitch_mm[1]
 
     # Transform the LED coordinates to the global coordinate system
     rotation_matrix = np.array(
@@ -78,17 +83,21 @@ def calibrate_rectangular_matrix(
             [np.sin(np.deg2rad(rot_deg)), np.cos(np.deg2rad(rot_deg))],
         ]
     )
-    led_coords = np.matmul(led_coords, rotation_matrix) + np.array(lateral_offset)
+    led_coords = np.matmul(led_coords, rotation_matrix) + np.array(lateral_offset_mm)
+
+    # Convert to microns
+    led_coords /= 1e3
+    axial_offset_um = axial_offset_mm / 1e3
 
     # Compute the wavevectors; direction cosines are the negative because the matrix is behind the
     # sample.
-    k = 2 * np.pi / wavelength
-    R = np.sqrt(led_coords[:, 0] ** 2 + led_coords[:, 1] ** 2 + axial_offset**2)
+    k = 2 * np.pi / wavelength_um
+    R = np.sqrt(led_coords[:, 0] ** 2 + led_coords[:, 1] ** 2 + axial_offset_um**2)
     dir_cos_x = -led_coords[:, 0] / R
     dir_cos_y = -led_coords[:, 1] / R
     kx = k * dir_cos_x
     ky = k * dir_cos_y
-    kz = -k * axial_offset / R
+    kz = -k * axial_offset_um / R
 
     # TODO Modify direction cosines to account for the refraction in the glass.
 
