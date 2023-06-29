@@ -65,3 +65,5 @@ black .
 See [arduino_src/led_matrix_controller/README.md](arduino_src/led_matrix_controller/README.md).
 
 ## uManager - Micro-Manager scripts for acquisition control
+
+See [umanager/README.md](umanager/README.md).
