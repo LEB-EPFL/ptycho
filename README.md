@@ -60,6 +60,12 @@ To reformat the code automatically:
 black .
 ```
 
+#### Adding/removing dependencies
+
+1. Add or remove your dependency to [pyproject.toml](pyproject.toml)
+2. Regenerate the lock file: `poetry lock`
+3. Synchronize your virtual environment with the new lock file: `poetry install`
+
 ## LED Matrix Controller - Arduino code to control an LED matrix
 
 See [arduino_src/led_matrix_controller/README.md](arduino_src/led_matrix_controller/README.md).
