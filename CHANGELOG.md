@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [leb-freeze-Unreleased]
+
+### Added
+
+- Added a `Zernike` class and routines to compute Zernike polynomials for aberrated pupils.
+
+### Changed
+
+- The simulation now returns an unaberrated pupil to use in reconstructions and a ground truth pupil.
+- `fp_recover()` now returns the reconstructed object and pupil, not just the object.
+
+### Fixed
+
+- Fixed the `pupil_radius_px` calculation for the `Pupil` class.
+
 ## [leb-freeze-0.0.0]
 
 ### Added
@@ -25,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a `calibrate.bsh` script to run the Fourier ptychography calibration routine.
 
-
+[leb-freeze-Unreleased]: https://github.com/leb-epfl/mr-freeze/compare/leb-freeze-v0.0.0...HEAD
 [leb-freeze-0.0.0]: https://github.com/leb-epfl/mr-freeze/releases/tag/leb-freeze-v0.0.0
 [uManager-Unreleased]: https://github.com/leb-epfl/mr-freeze/
 [LED-Matrix-Controller-0.0.0]: https://github.com/leb-epfl/mr-freeze/releases/tag/led-matrix-controller-v0.0.0

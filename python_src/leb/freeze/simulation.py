@@ -1,4 +1,6 @@
 """Simulation of a Fourier Ptychography dataset."""
+from typing import Optional
+
 import numpy as np
 from numpy.fft import fft2, fftshift, ifft2, ifftshift
 from numpy.typing import NDArray
@@ -22,7 +24,8 @@ def fp_simulation(
     center_led: tuple[float, float] = (8, 8),
     led_pitch_mm: tuple[float, float] = (4, 4),
     axial_offset_mm: float = -50,
-) -> tuple[FPDataset, Pupil, NDArray[np.complex128]]:
+    zernike_coeffs: Optional[list[float]] = None,
+) -> tuple[FPDataset, Pupil, NDArray[np.complex128], Pupil]:
     gt = ground_truth()
 
     # Compute the LED indexes
@@ -42,10 +45,15 @@ def fp_simulation(
     # The images and the pupil will be scaling_factor times smaller than the ground truth in each
     # dimension.
     dataset_size = int(gt_img_size / upsampling_factor)
-    pupil = Pupil.from_system_params(
-        num_px=dataset_size, px_size_um=px_size_um, wavelength_um=wavelength_um, mag=mag, na=na
+    gt_pupil = Pupil.from_system_params(
+        num_px=dataset_size,
+        px_size_um=px_size_um,
+        wavelength_um=wavelength_um,
+        mag=mag,
+        na=na,
+        zernike_coeffs=zernike_coeffs,
     )
-    images = generate_simulated_images(gt, calibration, pupil)
+    images = generate_simulated_images(gt, calibration, gt_pupil)
 
     # Create the dataset
     dataset = FPDataset.from_calibration(
@@ -53,7 +61,16 @@ def fp_simulation(
         calibration=calibration,
     )
 
-    return (dataset, pupil, gt)
+    # Create an unaberrated pupil to use for reconstruction
+    pupil = Pupil.from_system_params(
+        num_px=dataset_size,
+        px_size_um=px_size_um,
+        wavelength_um=wavelength_um,
+        mag=mag,
+        na=na,
+    )
+
+    return (dataset, pupil, gt, gt_pupil)
 
 
 def generate_led_indexes(

@@ -26,3 +26,10 @@ def test_fp_recover(fake_dataset, fake_pupil):
     pupil_recovery_method = PupilRecoveryMethod.NONE
 
     fp_recover(fake_dataset, fake_pupil, pupil_recovery_method=pupil_recovery_method)
+
+
+def test_aberrated_pupil_should_not_fail_if_missing_noll_indexes():
+    # Noll indexes 8, 9, and 10 are missing for radial degree 3.
+    zernike_coeffs = [0.3, 0.5, 0.3, 0.6, 0.8, 0.3, 0.1]
+
+    Pupil.from_system_params(num_px=NUM_PX[0], zernike_coeffs=zernike_coeffs)
