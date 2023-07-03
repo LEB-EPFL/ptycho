@@ -12,6 +12,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
+h5py = "*"  # For zernike package
 numpy = "*"
 python = "^3.8"
 scikit-image = "*"
