@@ -90,7 +90,8 @@ def generate_simulated_images(
     gt: NDArray[np.complex128], calibration: Calibration, pupil: Pupil
 ) -> NDArray[np.float64]:
     """Generates simulated images from a ground truth object."""
-    gt_fft = fftshift(fft2(gt))
+    dx = 2 * np.pi / pupil.k_S
+    gt_fft = dx * dx * fftshift(fft2(gt))
 
     dataset_size_px = pupil.p.shape[0]
     num_images = len(calibration)
@@ -108,10 +109,10 @@ def generate_simulated_images(
 
         # Copy the slice, then low pass filter it with the pupil
         current_slice_fft = current_slice_fft.copy()
-        current_slice_fft *= pupil.p  # TODO Add abberrations here
+        current_slice_fft *= pupil.p
 
         # Inverse FFT to obtain the image
-        current_image = pupil.dk**2 * np.abs(ifft2(ifftshift(current_slice_fft)))
+        current_image = np.abs(ifft2(ifftshift(current_slice_fft)) / dx / dx)
 
         images[image_num] = current_image
 

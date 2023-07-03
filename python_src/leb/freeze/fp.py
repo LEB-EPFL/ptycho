@@ -66,9 +66,10 @@ def fp_recover(
 
     # Though we are upsampling the target, the pupil sampling rate dk remains unchanged because
     # the upsampling is performed to add pixels to the FFT, not to improve k-space resolution!
+    dx = 2 * np.pi / pupil.k_S  # Spacing between object pixels
     initial_object = np.mean(dataset.images, axis=0)
     target = rescale(initial_object, upsampling_factor)
-    target_fft = fftshift(fft2(target))
+    target_fft = dx * dx * fftshift(fft2(target))
     target_pupil = deepcopy(pupil)
 
     original_size_px = dataset.images.shape[1]
@@ -98,15 +99,14 @@ def fp_recover(
             low_res_img_fft = current_slice_fft * target_pupil.p
 
             # Compute the low resolution image from the current slice
-            # TODO Verify that multiplication by dk **2 is correct.
-            low_res_img = target_pupil.dk**2 * ifft2(ifftshift(low_res_img_fft))
+            low_res_img = ifft2(ifftshift(low_res_img_fft)) / dx / dx
 
             # Replace the amplitude of the low res. image with the measured amplitude.
             # Leave the phase unchanged.
             low_res_img = np.abs(image) * np.exp(1j * np.angle(low_res_img))
 
             # Update the target_fft with the new slice data using the rPIE algorithm
-            next_low_res_img_fft = fftshift(fft2(low_res_img))
+            next_low_res_img_fft = dx * dx * fftshift(fft2(low_res_img))
             current_slice_fft += (
                 np.conj(target_pupil.p)
                 / (
@@ -133,8 +133,7 @@ def fp_recover(
                     continue
 
     # Compute the final complex object
-    # TODO Verify that multiplication by dk **2 is correct.
-    return target_pupil.dk**2 * ifft2(ifftshift(target_fft)), target_pupil
+    return ifft2(ifftshift(target_fft)) / dx / dx, target_pupil
 
 
 def slice_fft(
