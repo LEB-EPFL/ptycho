@@ -12,10 +12,10 @@ Hardware control and image analysis code for Mr. Freeze, the LEB plunge freezer.
 from leb.freeze import fp_simulation, fp_recover
 
 # Simulate a Fourier Ptychography dataset
-dataset, pupil, ground_truth = fp_simulation()
+dataset, unaberrated_pupil, ground_truth_object, ground_truth_pupil = fp_simulation()
 
-# Recover the complex object function
-results = fp_recover(dataset=dataset, pupil=pupil)
+# Recover the complex object function and pupil
+obj, pupil = fp_recover(dataset=dataset, pupil=unaberrated_pupil)
 ```
 
 ### Development

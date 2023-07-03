@@ -2,7 +2,7 @@
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
-from typing import Self
+from typing import Optional, Self
 
 import numpy as np
 from numpy.fft import fft2, fftshift, ifft2, ifftshift
@@ -10,6 +10,7 @@ from numpy.typing import NDArray
 from skimage.transform import rescale
 
 from leb.freeze.datasets import FPDataset
+from leb.freeze.zernike import Zernike
 
 
 class FPRecoveryError(Exception):
@@ -29,7 +30,38 @@ def fp_recover(
     pupil_recovery_method: PupilRecoveryMethod = PupilRecoveryMethod.NONE,
     upsampling_factor: int = 4,
     alpha_O: float = 1.0,
-) -> NDArray[np.complex128]:
+    alpha_P: float = 1.0,
+) -> tuple[NDArray[np.complex128], "Pupil"]:
+    """Reconstruct a complex object and pupil from a Fourier Ptychography dataset.
+
+    Parameters
+    ----------
+    dataset : FPDataset
+        The set of real images taken under different illumination angles.
+    pupil : Pupil
+        The initial pupil estimate.
+    num_iterations : int
+        The number of iterations to use in the reconstruction.
+    pupil_recovery_method : PupilRecoveryMethod
+        The method used to reconstruct the pupil. PupilRecoveryMethod.NONE will skip pupil recovery.
+    upsampling_factor : int
+        The factor by which the target object will be larger than the input data in each dimension.
+        For example, if the input data is 64x64 and upsampling_factor=4, then the recovered object
+        will be 256x256.
+    alpha_O : float
+        The rPIE algorithm parameter for updating the object.
+    alpha_P : float
+        The rPIE algorithm parameter for updating the pupil. This is only used if
+        pupil_recovery_method is PupilRecoveryMethod.rPIE.
+
+    Returns
+    -------
+    obj : NDArray[np.complex128]
+        The recovered complex object.
+    pupil : Pupil
+        The recovered pupil.
+
+    """
     assert dataset.images.shape[1] == dataset.images.shape[2]  # Images must be square
 
     # Though we are upsampling the target, the pupil sampling rate dk remains unchanged because
@@ -87,7 +119,14 @@ def fp_recover(
             # Update the pupil function
             match pupil_recovery_method:
                 case PupilRecoveryMethod.rPIE:
-                    raise NotImplementedError
+                    target_pupil.p[:] += (
+                        np.conj(current_slice_fft)
+                        / (
+                            (1 - alpha_P) * abs(current_slice_fft) ** 2
+                            + alpha_P * np.max(np.abs(current_slice_fft) ** 2)
+                        )
+                        * (next_low_res_img_fft - low_res_img_fft)
+                    )
                 case PupilRecoveryMethod.GD:
                     raise NotImplementedError
                 case PupilRecoveryMethod.NONE:
@@ -95,7 +134,7 @@ def fp_recover(
 
     # Compute the final complex object
     # TODO Verify that multiplication by dk **2 is correct.
-    return target_pupil.dk**2 * ifft2(ifftshift(target_fft))
+    return target_pupil.dk**2 * ifft2(ifftshift(target_fft)), target_pupil
 
 
 def slice_fft(
@@ -166,6 +205,7 @@ class Pupil:
         wavelength_um: float = 0.488,
         mag: float = 10.0,
         na: float = 0.288,
+        zernike_coeffs: Optional[list[float]] = None,
     ) -> Self:
         """Computes an unaberrated pupil from the microscope system parameters.
 
@@ -181,6 +221,9 @@ class Pupil:
             Magnification of the full imaging system.
         na : float
             Numerical aperture of the objective.
+        zernike_coeffs : Optional[np.ndarray]
+            Zernike coefficients of the aberrated pupil. If None, the pupil is unaberrated. The
+            first coefficient corresponds to Noll index 1, the second to Noll index 2, etc.
 
         Returns
         -------
@@ -198,13 +241,53 @@ class Pupil:
         dk = k_S / num_px
 
         # Pupil radius in the Fourier plane in pixels
-        # R = NA / wavelength / dk
-        pupil_radius_px = int(na / wavelength_um / dk)
+        # k_cutoff = 2 * pi * NA / wavelength / dk
+        pupil_radius_px = int(2 * np.pi * na / wavelength_um / dk)
 
-        # Create a circular pupil
-        pupil = np.ones((num_px, num_px), dtype=np.complex128)
+        # Create a circular, unabberated pupil
+        pupil_data = np.ones((num_px, num_px), dtype=np.complex128)
         y, x = np.ogrid[-num_px // 2 : num_px // 2, -num_px // 2 : num_px // 2]
         mask = x**2 + y**2 > pupil_radius_px**2
-        pupil[mask] = 0
+        pupil_data[mask] = 0
 
-        return Pupil(pupil, k_S, dk, pupil_radius_px)
+        pupil = Pupil(pupil_data, k_S, dk, pupil_radius_px)
+
+        # Abberate the pupil if necessary
+        if zernike_coeffs is None:
+            return pupil
+        return aberrate_pupil(pupil, zernike_coeffs)
+
+
+def aberrate_pupil(pupil: Pupil, zernike_coeffs: list[float]) -> NDArray[np.complex128]:
+    """Returns an aberrated pupil.
+
+    Parameters
+    ----------
+    pupil : Pupil
+        An unaberrated pupil. A deep copy will be made so that the input is unchanged.
+    zernike_coeffs : list[float]
+        Zernike coefficients of the aberrated pupil. The first coefficient corresponds to Noll
+        index 1, the second to Noll index 2, etc.
+
+    Returns
+    -------
+    new_pupil : npt.NDArray[np.complex128]
+        An aberrated pupil.
+
+    """
+    num_px = pupil.p.shape[0]
+    pupil_radius_px = pupil.pupil_radius_px
+
+    num_noll_indexes = len(zernike_coeffs)
+    radial_degree, _ = Zernike.noll_to_zernike(num_noll_indexes)
+
+    # Radial distance 2 * np.pi * na / wavelength_um / dk should correspond to a value of 1
+    x_range = (-num_px / pupil_radius_px / 2, num_px / pupil_radius_px / 2)
+    y_range = (-num_px / pupil_radius_px / 2, num_px / pupil_radius_px / 2)
+    shape = (num_px, num_px)
+    zernike = Zernike(x_range, y_range, shape, radial_degree)
+
+    new_pupil = deepcopy(pupil)
+    new_pupil.p[:] *= np.exp(1j * zernike(zernike_coeffs))
+
+    return new_pupil
