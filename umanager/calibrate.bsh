@@ -72,11 +72,8 @@ int[] spiral(int index, int[] center, String direction) {
 }
 
 // Acquisiton configuration
-import org.micromanager.data.Image;
 import org.micromanager.data.Datastore;
 import org.micromanager.display.DisplayWindow;
-
-import mmcorej.TaggedImage;
 
 Datastore store = mm.data().createRAMDatastore();
 DisplayWindow display = mm.displays().createDisplay(store);
@@ -86,14 +83,14 @@ cb = mm.data().coordsBuilder();
 // Main acquisition loop
 int[] currentCoords;
 for (int i = 0; i < numLEDs; i++) {
-    print("Iteration number " + i " of " + numLEDs - 1);
+    print("Iteration number " + i + " of " + (numLEDs - 1));
 
     // Clear the LED matrix
     mmc.setSerialPortCommand(port, eraseCommand, commandTerminator);
     answer = mmc.getSerialPortAnswer(port, answerTerminator); 
 
-	// Get the coordinates of the LED to illuminate
-	currentCoords = spiral(i, centerLEDCoord, direction);
+    // Get the coordinates of the LED to illuminate
+    currentCoords = spiral(i, centerLEDCoord, direction);
 
     // TODO Ensure the currentCoords actually exist on the LED matrix
     // If not, continue to the next iteration. This will likely mean we will
@@ -107,8 +104,20 @@ for (int i = 0; i < numLEDs; i++) {
     // Take image, assign coordinates, and put it in the image store.
     images = mm.live().snap(true); 
     img = images.get(0);
-    cImg = img.copyAtCoords(cb.time(i).build());
+
+    metadata = img.getMetadata();
+    userDataBuilder = metadata.getUserData().copyBuilder();
+    userData = userDataBuilder
+        .putInteger("LEDCoordX", currentCoords[0])
+        .putInteger("LEDCoordY", currentCoords[1])
+        .putInteger("centerLEDCoordX", centerLEDCoord[0])
+        .putInteger("centerLEDCoordY", centerLEDCoord[1])
+        .build();
+    cMetadata = metadata.copyBuilderPreservingUUID().userData(userData).build();
+    coords = cb.time(i).build();
+    cImg = img.copyWith(coords, cMetadata);
+
     store.putImage(cImg);
 }
 
-store.freeze()
+store.freeze();

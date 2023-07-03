@@ -5,20 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [leb-freeze-Unreleased]
+## [Unreleased]
 
 ### Added
 
-- Added a `Zernike` class and routines to compute Zernike polynomials for aberrated pupils.
+- Added a `Zernike` class and routines to compute Zernike polynomials for aberrated pupils to leb-freeze.
+- The `calibrate.bsh` Micro-Manager script now appends the LED indexes to the image metadata.
+- The `calibrate.bsh` Micro-Manager script now appends the center LED indexes to the image metadata.
 
 ### Changed
 
-- The simulation now returns an unaberrated pupil to use in reconstructions and a ground truth pupil.
+- The leb-freeze simulation now returns an unaberrated pupil to use in reconstructions and a ground truth pupil.
 - `fp_recover()` now returns the reconstructed object and pupil, not just the object.
 
 ### Fixed
 
-- Fixed the `pupil_radius_px` calculation for the `Pupil` class.
+- Fixed the `pupil_radius_px` calculation for the `Pupil` class in leb-freeze.
+- Fixed a bug when printing the status in `calibrate.bsh`.
 
 ## [leb-freeze-0.0.0]
 
@@ -40,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a `calibrate.bsh` script to run the Fourier ptychography calibration routine.
 
-[leb-freeze-Unreleased]: https://github.com/leb-epfl/mr-freeze/compare/leb-freeze-v0.0.0...HEAD
+[Unreleased]: https://github.com/leb-epfl/mr-freeze
 [leb-freeze-0.0.0]: https://github.com/leb-epfl/mr-freeze/releases/tag/leb-freeze-v0.0.0
 [uManager-Unreleased]: https://github.com/leb-epfl/mr-freeze/
 [LED-Matrix-Controller-0.0.0]: https://github.com/leb-epfl/mr-freeze/releases/tag/led-matrix-controller-v0.0.0
