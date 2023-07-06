@@ -86,7 +86,7 @@ for (int i = 0; i < numLEDs; i++) {
     print("Iteration number " + i + " of " + (numLEDs - 1));
 
     // Clear the LED matrix
-    mmc.setSerialPortCommand(port, eraseCommand, commandTerminator);
+    mmc.setSerialPortCommand(port, clearCommand, commandTerminator);
     answer = mmc.getSerialPortAnswer(port, answerTerminator); 
 
     // Get the coordinates of the LED to illuminate

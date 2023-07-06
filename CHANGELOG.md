@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed the `pupil_radius_px` calculation for the `Pupil` class in leb-freeze.
 - Fixed a bug when printing the status in `calibrate.bsh`.
+- Fixed a bug related to serial command variable naming in `calibrate.bsh`.
 - Fixed scaling factors for FFTs in `fp_recover` function.
 
 ## [leb-freeze-0.0.0]
