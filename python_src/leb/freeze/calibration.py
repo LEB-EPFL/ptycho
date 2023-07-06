@@ -16,7 +16,7 @@ Calibration = dict[LEDIndexes, Wavevector]
 def calibrate_rectangular_matrix(
     led_indexes: list[LEDIndexes],
     center_led: LEDIndexes,
-    pitch_mm: float | tuple[float, float],
+    pitch_mm: float | tuple[float, float] = 4.0,
     lateral_offset_mm: tuple[float, float] = (0.0, 0.0),
     axial_offset_mm: float = -50e3,
     rot_deg: float = 0.0,

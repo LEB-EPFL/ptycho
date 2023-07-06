@@ -1,3 +1,6 @@
+# Ignore the tmp dir to keep data there
+tmp/
+
 # VS Code
 .vscode
 

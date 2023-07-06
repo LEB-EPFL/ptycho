@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `Zernike` class and routines to compute Zernike polynomials for aberrated pupils to leb-freeze.
 - The `calibrate.bsh` Micro-Manager script now appends the LED indexes to the image metadata.
 - The `calibrate.bsh` Micro-Manager script now appends the center LED indexes to the image metadata.
+- `FPDataset` instances can now be sliced, e.g. `dataset[:42]`.
+- A new `FPDataset.crop` method allows images to be cropped.
 
 ### Changed
 
