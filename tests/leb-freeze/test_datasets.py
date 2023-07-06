@@ -23,10 +23,38 @@ def test_ptychodataset(fake_data):
     assert len(dataset) == len(images)
 
 
+def test_ptychodataset_shape(fake_data):
+    """Test the PtychoDataset class."""
+    images, wavevectors, led_indexes = fake_data
+
+    dataset = FPDataset(images, wavevectors, led_indexes)
+
+    assert dataset.shape == dataset.images.shape
+
+
 def test_ptychodataset_can_index_into_dataset(fake_data):
     dataset = FPDataset(*fake_data)
 
-    image_1, wavevector_1, led_index_1 = dataset[1]
+    new_dataset = dataset[1]
+
+    assert len(new_dataset) == 1
+
+
+def test_ptychodataset_can_slice_into_dataset(fake_data):
+    dataset = FPDataset(*fake_data)
+
+    new_dataset = dataset[1:3]
+
+    assert len(new_dataset) == 2
+
+
+def test_ptychodataset_integer_index_preserves_images_time_dimension(fake_data):
+    dataset = FPDataset(*fake_data)
+    rows, cols = dataset.images.shape[1:]
+
+    sub = dataset[1]
+
+    assert sub.images.shape == (1, rows, cols)
 
 
 def test_ptychodataset_index_out_of_bounds(fake_data):
@@ -34,7 +62,7 @@ def test_ptychodataset_index_out_of_bounds(fake_data):
     index = len(dataset) + 1
 
     with pytest.raises(IndexError):
-        image, wavevector, led_index = dataset[index]
+        _ = dataset[index]
 
 
 def test_pytchodataset_is_iterable(fake_data):
