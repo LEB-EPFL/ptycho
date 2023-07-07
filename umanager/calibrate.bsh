@@ -12,11 +12,11 @@
 // Data in this section should change based on your experimental situation.
 
 // The coordinate of the on-axis LED as determined during the initial alignment
-int[] centerLEDCoord = {13, 15};
+int[] centerLEDCoord = {16, 16};
 
 
 // The number of LEDs to use during the calibration; can be less than the number of LEDs in the matrix
-int numLEDs = 20 * 20;
+int numLEDs = 16 * 16;
 
 /*
  * CODE BELOW THIS LINE IS NOT LIKELY TO CHANGE
@@ -26,22 +26,22 @@ int numLEDs = 20 * 20;
 // Serial communications configuration
 // Data here should change if the serial interface to the LED controller changes
 String port = "COM5"; 
-String drawCommand = "draw ";
-String clearCommand = "fill 0";
 String commandTerminator = "\n"; 
 String answerTerminator = "\n";
+String drawCommand = "draw ";
+String clearCommand = "fill 0";
 
 // The spiral direction
 String direction = "counterclockwise";
 
-// Returns the row, col index of a position on a square grid whose trajectory spirals outward from the center.
+// Returns the x, y index of a position on a square grid whose trajectory spirals outward from the center.
 //
 // This is used to illuminate one LED at a time in spiral pattern from the center.
 int[] spiral(int index, int[] center, String direction) {
-    int row = center[0];
-    int col = center[1];
+    int x = center[0];
+    int y = center[1];
     if (index == 0) {
-        return new int[]{row, col};
+        return new int[]{x, y};
     }
 
     int step = 1;
@@ -52,14 +52,14 @@ int[] spiral(int index, int[] center, String direction) {
     int directionIndex = 0;
 
     while (stepsTaken < index) {
-        int dr = directions.get(direction)[directionIndex * 2];
-        int dc = directions.get(direction)[directionIndex * 2 + 1];
+        int dx = directions.get(direction)[directionIndex * 2];
+        int dy = directions.get(direction)[directionIndex * 2 + 1];
         for (int i = 0; i < step; i++) {
-            row += dr;
-            col += dc;
+            x += dr;
+            y += dc;
             stepsTaken++;
             if (stepsTaken == index) {
-                return new int[]{row, col};
+                return new int[]{x, y};
             }
         }
         directionIndex = (directionIndex + 1) % 4;
@@ -68,7 +68,7 @@ int[] spiral(int index, int[] center, String direction) {
         }
     }
 
-    return new int[]{row, col};
+    return new int[]{x, y};
 }
 
 // Acquisiton configuration
@@ -91,18 +91,14 @@ for (int i = 0; i < numLEDs; i++) {
 
     // Get the coordinates of the LED to illuminate
     currentCoords = spiral(i, centerLEDCoord, direction);
-
-    // TODO Ensure the currentCoords actually exist on the LED matrix
-    // If not, continue to the next iteration. This will likely mean we will
-    // have to use a while loop so that the index only increases when the coordinates
-    // are valid.
+    print("LED x-coord: " + currentCoords[0] + ", LED y-coord: " + currentCoords[1]);
 
     // Draw the pixel
     mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + currentCoords[1] +" 1", commandTerminator);
     answer = mmc.getSerialPortAnswer(port, answerTerminator);
 
     // Take image, assign coordinates, and put it in the image store.
-    images = mm.live().snap(true); 
+    images = mm.live().snap(true);
     img = images.get(0);
 
     metadata = img.getMetadata();
