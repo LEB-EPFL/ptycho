@@ -109,6 +109,23 @@ def load_dataset(
     stack_type: StackType = StackType.MM,
     **kwargs,
 ) -> FPDataset:
+    """Load a Fourier Ptychographic dataset from an image stack.
+
+    `kwargs` are passed to the calibration function which maps LED indexes to wavevectors.
+
+    Parameters
+    ----------
+    file_path : Path
+        The path to the image stack.
+    stack_type : StackType, optional
+        The type of the image stack, by default StackType.MM.
+
+    Returns
+    -------
+    FPDataset
+        The Fourier Ptychographic dataset.
+
+    """
     match stack_type:
         case StackType.MM:
             # Read images
@@ -133,6 +150,9 @@ def load_dataset(
 
 @dataclass(frozen=True)
 class Metadata:
+    """The relevant metadata from a Micro-Manager image stack.
+
+    """
     led_indexes: list[LEDIndexes]
     center_led_index: LEDIndexes
 
@@ -145,7 +165,29 @@ def parse_mm_metadata(
     center_led_coord_x_key: str = "centerLEDCoordX",
     center_led_coord_y_key: str = "centerLEDCoordY",
 ) -> Metadata:
-    """Parse the metadata from a Micro-Manager stack."""
+    """Parse the metadata from a Micro-Manager stack.
+
+    Parameters
+    ----------
+    metadata : dict
+        The raw metadata.
+    frame_key : str, optional
+        The key for the frame number, by default "FrameKey".
+    led_coord_x_key : str, optional
+        The key for the LED x-coordinate, by default "LEDCoordX".
+    led_coord_y_key : str, optional
+        The key for the LED y-coordinate, by default "LEDCoordY".
+    center_led_coord_x_key : str, optional
+        The key for the center LED x-coordinate, by default "centerLEDCoordX".
+    center_led_coord_y_key : str, optional
+        The key for the center LED y-coordinate, by default "centerLEDCoordY".
+
+    Returns
+    -------
+    Metadata
+        The parsed metadata.
+
+    """
     frame_data = {}
     got_center_led = False
     for key in metadata.keys():
