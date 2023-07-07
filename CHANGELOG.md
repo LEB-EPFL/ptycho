@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- `FPDataset` images can now be rectangular instead of requiring them to be square.
+- `fp_recover` now raises a `FPRecoveryError` instead of an `AssertionError` if dataset images are not square.
+
 ## [1.0.0] - 2023-07-06
 
 ### Added

@@ -80,12 +80,11 @@ def test_ptychodataset_images_wrong_ndim(fake_data):
         FPDataset(images, wavevectors, led_indexes)
 
 
-def test_ptychodataset_images_not_square(fake_data):
+def test_ptychodataset_images_can_be_not_square(fake_data):
     images, wavevectors, led_indexes = fake_data
     images = images[:, :, 0:-1]
 
-    with pytest.raises(ValueError):
-        FPDataset(images, wavevectors, led_indexes)
+    FPDataset(images, wavevectors, led_indexes)
 
 
 def test_ptychodataset_wavevectors_wrong_ndim(fake_data):

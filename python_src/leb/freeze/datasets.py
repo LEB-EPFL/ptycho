@@ -24,11 +24,6 @@ class FPDataset:
                 "The images array must be 3-dimensional. Actual number of dimensions: "
                 f"{self.images.ndim}"
             )
-        if self.images.shape[1] != self.images.shape[2]:
-            raise ValueError(
-                f"Square images are required. Actual shape: ({self.images.shape[1]}, "
-                f"{self.images.shape[2]})"
-            )
         if self.wavevectors.ndim != 2:
             raise ValueError(
                 "The wavevectors array must be 2-dimensional. Actual number of dimensions: "

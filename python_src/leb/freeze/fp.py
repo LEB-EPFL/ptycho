@@ -62,7 +62,10 @@ def fp_recover(
         The recovered pupil.
 
     """
-    assert dataset.images.shape[1] == dataset.images.shape[2]  # Images must be square
+    if dataset.images.shape[1] != dataset.images.shape[2]:
+        raise FPRecoveryError(
+            f"Dataset images must be square. Actual shape: {dataset.images.shape[1:]}"
+        )
 
     # Though we are upsampling the target, the pupil sampling rate dk remains unchanged because
     # the upsampling is performed to add pixels to the FFT, not to improve k-space resolution!
