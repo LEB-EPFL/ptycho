@@ -14,7 +14,7 @@ from leb.freeze.calibration import Calibration, LEDIndexes, calibrate_rectangula
 @dataclass(frozen=True)
 class FPDataset:
     """A Fourier Ptychographic dataset.
-    
+
     Attributes
     ----------
     images: np.ndarray
@@ -25,6 +25,7 @@ class FPDataset:
         A time x 2 array of LED indexes corresponding to each wavevector.
 
     """
+
     images: np.ndarray
     wavevectors: np.ndarray
     led_indexes: np.ndarray
@@ -162,9 +163,8 @@ def load_dataset(
 
 @dataclass(frozen=True)
 class Metadata:
-    """The relevant metadata from a Micro-Manager image stack.
+    """The relevant metadata from a Micro-Manager image stack."""
 
-    """
     led_indexes: list[LEDIndexes]
     center_led_index: LEDIndexes
 

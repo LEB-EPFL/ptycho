@@ -7,9 +7,12 @@
  * This script requires a FreeSerialPort device in your device configuration whose COM port matches the one below.
  */
 
-// Configuration
-//
-// Data in this section should change based on your experimental situation.
+/*
+ * USER CONFIGURATION
+ * =================================================================================================================================
+ *
+ * Data in this section should change based on your experimental details.
+ */
 
 // The coordinate of the on-axis LED as determined during the initial alignment
 int[] centerLEDCoord = {16, 16};
@@ -17,11 +20,6 @@ int[] centerLEDCoord = {16, 16};
 
 // The number of LEDs to use during the calibration; can be less than the number of LEDs in the matrix
 int numLEDs = 16 * 16;
-
-/*
- * CODE BELOW THIS LINE IS NOT LIKELY TO CHANGE
- * =================================================================================================================================
- */
 
 // Serial communications configuration
 // Data here should change if the serial interface to the LED controller changes
@@ -31,8 +29,14 @@ String answerTerminator = "\n";
 String drawCommand = "draw ";
 String clearCommand = "fill 0";
 
-// The spiral direction
-String direction = "counterclockwise";
+/*
+ * CODE BELOW THIS LINE IS NOT LIKELY TO CHANGE
+ * =================================================================================================================================
+ */
+
+// The spiral direction as seen looking at the board, i.e. along positive z-axis in LED matrix
+// coordinate system.
+String direction = "clockwise";
 
 // Returns the x, y index of a position on a square grid whose trajectory spirals outward from the center.
 //
@@ -47,8 +51,8 @@ int[] spiral(int index, int[] center, String direction) {
     int step = 1;
     int stepsTaken = 0;
     HashMap directions = new HashMap();
-    directions.put("clockwise", new int[]{0, 1, 1, 0, 0, -1, -1, 0});
-    directions.put("counterclockwise", new int[]{0, 1, -1, 0, 0, -1, 1, 0});
+    directions.put("counterclockwise", new int[]{0, 1, 1, 0, 0, -1, -1, 0});
+    directions.put("clockwise", new int[]{0, 1, -1, 0, 0, -1, 1, 0});
     int directionIndex = 0;
 
     while (stepsTaken < index) {

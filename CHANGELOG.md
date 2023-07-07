@@ -7,14 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A detailed discussion about the coordinate systems used to transform LED indexes to wavevectors
+  is now included in `calibration.py`.
+
 ### Changed
 
-- `FPDataset` images can now be rectangular instead of requiring them to be square.
-- `fp_recover` now raises a `FPRecoveryError` instead of an `AssertionError` if dataset images are not square.
+- `FPDataset` images can now be rectangular instead of requiring them to be square. This change was
+  made to make it easier to import datasets from cameras with non-square sensors.
+- `fp_recover` now raises a `FPRecoveryError` instead of an `AssertionError` if dataset images are
+  not square.
 
 ### Fixed
 
 - The spiral generator in `calibrate.bsh` now returns (x, y) coordinates instead of (row, col).
+- `clockwise` and `counterclockwise` spiral directions in `calibrate.bsh` are now correct.
+- `calibrate_rectangular_matrix` now accounts for the fact that the LED matrix coordinate system's
+  z-axis points in the opposite direction of the z-axis of the global coordinate system.
 
 ## [1.0.0] - 2023-07-06
 

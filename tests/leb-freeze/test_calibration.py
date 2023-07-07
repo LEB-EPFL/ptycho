@@ -34,15 +34,15 @@ def test_calibrate_rectangular_matrix_off_center():
     axial_offset_mm = -50
     wavelength_um = 0.488
 
+    # Expected wavevector
+    abs_angle = np.abs(np.arctan(pitch_mm / axial_offset_mm))
+    k = 2 * np.pi / wavelength_um
+    k_expected = np.array([0, k * np.sin(abs_angle), k * np.cos(abs_angle)])
+
     ks = calibrate_rectangular_matrix(
         indexes, center_led, pitch_mm, axial_offset_mm=axial_offset_mm, wavelength_um=wavelength_um
     )
     k_actual = np.array([*ks[(0, 1)]])
-
-    # Expected wavevector
-    angle = np.arctan(pitch_mm / axial_offset_mm)
-    k = 2 * np.pi / wavelength_um
-    k_expected = np.array([0, k * np.sin(angle), k * np.cos(angle)])
 
     assert_almost_equal(k_actual, k_expected)
 
@@ -56,6 +56,17 @@ def test_calibrate_rectangular_matrix_off_center_rotated():
     rot_deg = 45
     wavelength_um = 0.488
 
+    # Expected wavevector
+    abs_angle = np.abs(np.arctan(pitch_mm / axial_offset_mm))
+    k = 2 * np.pi / wavelength_um
+    k_expected = np.array(
+        [
+            -np.sqrt(2) / 2 * k * np.sin(abs_angle),
+            np.sqrt(2) / 2 * k * np.sin(abs_angle),
+            k * np.cos(abs_angle),
+        ]
+    )
+
     ks = calibrate_rectangular_matrix(
         indexes,
         center_led,
@@ -65,13 +76,6 @@ def test_calibrate_rectangular_matrix_off_center_rotated():
         wavelength_um=wavelength_um,
     )
     k_actual = np.array([*ks[(0, 1)]])
-
-    # Expected wavevector
-    angle = np.arctan(pitch_mm / axial_offset_mm)
-    k = 2 * np.pi / wavelength_um
-    k_expected = np.array(
-        [np.sqrt(2) / 2 * k * np.sin(angle), np.sqrt(2) / 2 * k * np.sin(angle), k * np.cos(angle)]
-    )
 
     assert_almost_equal(k_actual, k_expected)
 
