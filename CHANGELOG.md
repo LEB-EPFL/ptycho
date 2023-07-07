@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `FPDataset` images can now be rectangular instead of requiring them to be square.
 - `fp_recover` now raises a `FPRecoveryError` instead of an `AssertionError` if dataset images are not square.
 
+### Fixed
+
+- The spiral generator in `calibrate.bsh` now returns (x, y) coordinates instead of (row, col).
+
 ## [1.0.0] - 2023-07-06
 
 ### Added
