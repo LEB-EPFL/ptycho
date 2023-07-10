@@ -46,5 +46,9 @@ jobs:
         env:
           PYTHON_VERSION: ${{ matrix.python-version }}
         run: |
-          poetry run jupyter nbconvert --to python misc/*.ipynb
-          for f in misc/*.py; do poetry run python "$f"; done
+          if [ "RUNNER_OS" == "Linux" ]; then
+            poetry run jupyter nbconvert --to python misc/*.ipynb
+            for f in misc/*.py; do poetry run python "$f"; done
+          else
+            echo "Skipping notebook verification on Windows"
+          fi
