@@ -59,8 +59,8 @@ int[] spiral(int index, int[] center, String direction) {
         int dx = directions.get(direction)[directionIndex * 2];
         int dy = directions.get(direction)[directionIndex * 2 + 1];
         for (int i = 0; i < step; i++) {
-            x += dr;
-            y += dc;
+            x += dx;
+            y += dy;
             stepsTaken++;
             if (stepsTaken == index) {
                 return new int[]{x, y};
