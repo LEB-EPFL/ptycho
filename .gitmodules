@@ -1,0 +1,3 @@
+[submodule "led-array-datasets"]
+	path = led-array-datasets
+	url = git@github.com:LEB-EPFL/led-array-datasets.git

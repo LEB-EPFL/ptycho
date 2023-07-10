@@ -20,6 +20,21 @@ obj, pupil = fp_recover(dataset=dataset, pupil=unaberrated_pupil)
 
 ### Development
 
+#### Cloning and updating test data
+
+After you clone this repo, you will need to also synchronize the submodules that hold the test data for this project.
+
+```console
+git submodule init
+git submodule update
+```
+
+To pull any upstream changes to the test data:
+
+```console
+git submodule update --remote led-array-datasets
+```
+
 #### Setup the development environment
 
 1. Install Python >= 3.11 OR install [pyenv](https://github.com/pyenv/pyenv): `curl https://pyenv.run | bash`, then install Python interpreter(s): `pyenv install 3.11.4`
