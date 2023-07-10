@@ -21,6 +21,7 @@ zernike = "*"
 
 [tool.poetry.dev-dependencies]
 black = "*"
+jupyter = "*"
 pytest = "*"
 ruff = "*"
 
