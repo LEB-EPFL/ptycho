@@ -46,4 +46,5 @@ jobs:
         env:
           PYTHON_VERSION: ${{ matrix.python-version }}
         run: |
-          poetry run jupyter run misc/*.ipynb
+          poetry run jupyter nbconvert --to python misc/*.ipynb
+          for f in misc/*.py; do poetry run python "$f"; done
