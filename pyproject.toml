@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "leb-freeze"
-version = "1.0.0"
+version = "1.1.0"
 description = "Imaging processing with Fourier ptychography"
 authors = [
     "Kyle M. Douglass <kyle.douglass@epfl.ch>",
