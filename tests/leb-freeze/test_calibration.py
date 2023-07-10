@@ -61,7 +61,7 @@ def test_calibrate_rectangular_matrix_off_center_rotated():
     k = 2 * np.pi / wavelength_um
     k_expected = np.array(
         [
-            -np.sqrt(2) / 2 * k * np.sin(abs_angle),
+            np.sqrt(2) / 2 * k * np.sin(abs_angle),
             np.sqrt(2) / 2 * k * np.sin(abs_angle),
             k * np.cos(abs_angle),
         ]

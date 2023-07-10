@@ -32,7 +32,7 @@ from numpy.testing import assert_array_almost_equal_nulp
 
 # Used to test whether wavevector component squared magnitudes sum to k
 # See https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_array_almost_equal_nulp.html#numpy.testing.assert_array_almost_equal_nulp
-MAX_NULP = 3
+MAX_NULP = 2
 
 LEDIndexes = tuple[int, int]
 Wavevector = tuple[float, float, float]
