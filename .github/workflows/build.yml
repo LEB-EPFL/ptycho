@@ -18,6 +18,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          lfs: true
+          submodules: true
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -29,6 +32,7 @@ jobs:
           poetry install
       - name: Run linters
         run: |
+          poetry run black --check --diff .
           poetry run ruff check .
       - name: Run tests
         shell: bash
@@ -36,3 +40,9 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python-version }}
         run: |
           poetry run pytest
+      - name: Verify Jupyter notebooks
+        shell: bash
+        env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
+        run: |
+          poetry run jupyter run misc/*.ipynb
