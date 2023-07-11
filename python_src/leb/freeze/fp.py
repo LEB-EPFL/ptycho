@@ -131,7 +131,9 @@ def fp_recover(
                         * (next_low_res_img_fft - low_res_img_fft)
                     )
                 case PupilRecoveryMethod.GD:
+                    print("Kasia")
                     raise NotImplementedError
+
                 case PupilRecoveryMethod.NONE:
                     continue
 
