@@ -48,10 +48,12 @@ curl -sSL https://install.python-poetry.org | python3 -
 (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
 ```
 
-3. Tell Poetry to use virtual environments in the project root directory: `poetry config virtualenvs.in-project true`
-4. Set the virtual environment Python version to 3.11: `poetry env use 3.11`
-4. Activate the virtual environment: `poetry shell`
-5. Install the dependencies: `poetry install`
+3. Verify that Poetry is installed by running the command `poetry --version`. If the command is not found, you might need to add the directory containing the Poetry executable to your PATH environment variable. On Windows, the directory to add is `%APPDATA%\Python\Scripts`. On Linux/macOS, it's `$HOME/.local/bin`.
+
+4. Tell Poetry to use virtual environments in the project root directory: `poetry config virtualenvs.in-project true`
+5. Set the virtual environment Python version to 3.11: `poetry env use 3.11`
+6. Activate the virtual environment: `poetry shell`
+7. Install the dependencies: `poetry install`
 
 #### Testing
 
