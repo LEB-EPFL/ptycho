@@ -76,7 +76,7 @@ def fp_recover(
     target_fft = dx * dx * fftshift(fft2(target))
     target_pupil = deepcopy(pupil)
     original_size_px = dataset.images.shape[1]
-    
+
     for i in range(num_iterations):
         for image, wavevector, _ in dataset:
             # Obtain the rectangular slice from the target_fft centered at kx, ky to update.
@@ -108,8 +108,6 @@ def fp_recover(
             # Leave the phase unchanged.
             low_res_img = np.abs(image) * np.exp(1j * np.angle(low_res_img))
 
-            [m,n] = low_res_img.shape #m,n na później
-
             # Update the target_fft with the new slice data using the rPIE algorithm
             next_low_res_img_fft = dx * dx * fftshift(fft2(low_res_img))
             current_slice_fft += (
@@ -133,23 +131,29 @@ def fp_recover(
                         * (next_low_res_img_fft - low_res_img_fft)
                     )
                 case PupilRecoveryMethod.GD:
-                    low_res_img_fft = (1 / upsampling_factor)** 2 * current_slice_fft * target_pupil.p
+                    low_res_img_fft = (
+                        (1 / upsampling_factor) ** 2 * current_slice_fft * target_pupil.p
+                    )
                     low_res_img = ifft2(ifftshift(low_res_img_fft)) / dx / dx
-                    img_diff = (1 / np.max(upsampling_factor ** 2 * image)) * (1 - upsampling_factor ** 2 * image / np.abs(low_res_img))
-                    
+                    img_diff = (1 / np.max(upsampling_factor**2 * image)) * (
+                        1 - upsampling_factor**2 * image / np.abs(low_res_img)
+                    )
+
                     target_zernike_coeffs = [0 for _ in range(num_zernike_coeffs)]
                     for j, coeff in enumerate(target_zernike_coeffs):
                         # Create a pupil comprised of a single Zernike mode
-                        temp_coeffs = [0]*num_zernike_coeffs
+                        temp_coeffs = [0] * num_zernike_coeffs
                         temp_coeffs[j] = coeff
                         zernike_mode = update_phase(target_pupil, temp_coeffs)
 
-                        gd_temp = ifft2(ifftshift(low_res_img_fft * np.pi * zernike_mode.p)) / dx / dx
+                        gd_temp = (
+                            ifft2(ifftshift(low_res_img_fft * np.pi * zernike_mode.p)) / dx / dx
+                        )
                         # Gradient with respect to each weight
                         gradient = 2 * np.sum(img_diff * np.imag(np.conj(low_res_img * gd_temp)))
                         # Update each Zernike coefficient
-                        target_zernike_coeffs[j] += (10e-6 * gradient)
-                    target_pupil = update_phase(zernike_mode, target_zernike_coeffs, np.pi) 
+                        target_zernike_coeffs[j] += 10e-6 * gradient
+                    target_pupil = update_phase(zernike_mode, target_zernike_coeffs, np.pi)
                 case PupilRecoveryMethod.NONE:
                     continue
 
@@ -278,7 +282,9 @@ class Pupil:
         return update_phase(pupil, zernike_coeffs)
 
 
-def update_phase(pupil: Pupil, zernike_coeffs: list[float], phi: float=1) -> NDArray[np.complex128]:
+def update_phase(
+    pupil: Pupil, zernike_coeffs: list[float], phi: float = 1
+) -> NDArray[np.complex128]:
     """Replace the phase of a pupil with one defined by the given Zernike coefficients.
 
     Parameters
