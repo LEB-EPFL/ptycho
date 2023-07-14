@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Test data for the Jupyter notebooks are now part of the repository.
+- Implemented gradient descent pupil recovery in `fp_recover` reconstruction.
+- Added a `show_progress` parameter to `fp_recover` to toggle a progress bar during reconstruction.
 
 ## [1.1.1] - 2023-07-10
 

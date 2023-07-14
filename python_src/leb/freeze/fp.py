@@ -8,6 +8,7 @@ import numpy as np
 from numpy.fft import fft2, fftshift, ifft2, ifftshift
 from numpy.typing import NDArray
 from skimage.transform import rescale
+from tqdm import tqdm
 
 from leb.freeze.datasets import FPDataset
 from leb.freeze.zernike import Zernike
@@ -32,6 +33,7 @@ def fp_recover(
     alpha_O: float = 1.0,
     alpha_P: float = 1.0,
     num_zernike_coeffs: int = 6,
+    show_progress: bool = False,
 ) -> tuple[NDArray[np.complex128], "Pupil"]:
     """Reconstruct a complex object and pupil from a Fourier Ptychography dataset.
 
@@ -57,6 +59,8 @@ def fp_recover(
     num_zernike_coeffs : int
         The number of Zernike coefficients to use in the pupil recovery. This is only used if
         pupil_recovery_method is PupilRecoveryMethod.GD.
+    show_progress : bool
+        Whether to show a progress bar during the reconstruction.
 
     Returns
     -------
@@ -80,7 +84,8 @@ def fp_recover(
     target_pupil = deepcopy(pupil)
     original_size_px = dataset.images.shape[1]
 
-    for i in range(num_iterations):
+    num_iters = tqdm(range(num_iterations)) if show_progress else range(num_iterations)
+    for i in num_iters:
         for image, wavevector, _ in dataset:
             # Obtain the rectangular slice from the target_fft centered at kx, ky to update.
             kx_ky_px = np.round(wavevector[0:2] / pupil.dk).astype(int)
