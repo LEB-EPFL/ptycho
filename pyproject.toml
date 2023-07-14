@@ -17,6 +17,7 @@ numpy = "*"
 python = "^3.8"
 scikit-image = "*"
 tifffile = { extras = ["all"], version = "*" }
+tqdm = "*"
 zernike = "*"
 
 [tool.poetry.dev-dependencies]

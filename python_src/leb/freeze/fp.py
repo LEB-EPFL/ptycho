@@ -8,6 +8,7 @@ import numpy as np
 from numpy.fft import fft2, fftshift, ifft2, ifftshift
 from numpy.typing import NDArray
 from skimage.transform import rescale
+from tqdm import tqdm
 
 from leb.freeze.datasets import FPDataset
 from leb.freeze.zernike import Zernike
@@ -31,6 +32,8 @@ def fp_recover(
     upsampling_factor: int = 4,
     alpha_O: float = 1.0,
     alpha_P: float = 1.0,
+    num_zernike_coeffs: int = 6,
+    show_progress: bool = False,
 ) -> tuple[NDArray[np.complex128], "Pupil"]:
     """Reconstruct a complex object and pupil from a Fourier Ptychography dataset.
 
@@ -53,6 +56,11 @@ def fp_recover(
     alpha_P : float
         The rPIE algorithm parameter for updating the pupil. This is only used if
         pupil_recovery_method is PupilRecoveryMethod.rPIE.
+    num_zernike_coeffs : int
+        The number of Zernike coefficients to use in the pupil recovery. This is only used if
+        pupil_recovery_method is PupilRecoveryMethod.GD.
+    show_progress : bool
+        Whether to show a progress bar during the reconstruction.
 
     Returns
     -------
@@ -74,10 +82,10 @@ def fp_recover(
     target = rescale(initial_object, upsampling_factor)
     target_fft = dx * dx * fftshift(fft2(target))
     target_pupil = deepcopy(pupil)
-
     original_size_px = dataset.images.shape[1]
 
-    for i in range(num_iterations):
+    num_iters = tqdm(range(num_iterations)) if show_progress else range(num_iterations)
+    for i in num_iters:
         for image, wavevector, _ in dataset:
             # Obtain the rectangular slice from the target_fft centered at kx, ky to update.
             kx_ky_px = np.round(wavevector[0:2] / pupil.dk).astype(int)
@@ -131,7 +139,29 @@ def fp_recover(
                         * (next_low_res_img_fft - low_res_img_fft)
                     )
                 case PupilRecoveryMethod.GD:
-                    raise NotImplementedError
+                    low_res_img_fft = (
+                        (1 / upsampling_factor) ** 2 * current_slice_fft * target_pupil.p
+                    )
+                    low_res_img = ifft2(ifftshift(low_res_img_fft)) / dx / dx
+                    img_diff = (1 / np.max(upsampling_factor**2 * image)) * (
+                        1 - upsampling_factor**2 * image / np.abs(low_res_img)
+                    )
+
+                    target_zernike_coeffs = [0 for _ in range(num_zernike_coeffs)]
+                    for j, coeff in enumerate(target_zernike_coeffs):
+                        # Create a pupil comprised of a single Zernike mode
+                        temp_coeffs = [0] * num_zernike_coeffs
+                        temp_coeffs[j] = coeff
+                        zernike_mode = update_phase(target_pupil, temp_coeffs)
+
+                        gd_temp = (
+                            ifft2(ifftshift(low_res_img_fft * np.pi * zernike_mode.p)) / dx / dx
+                        )
+                        # Gradient with respect to each weight
+                        gradient = 2 * np.sum(img_diff * np.imag(np.conj(low_res_img) * gd_temp))
+                        # Update each Zernike coefficient
+                        target_zernike_coeffs[j] += 10e-6 * gradient
+                    target_pupil = update_phase(zernike_mode, target_zernike_coeffs, np.pi)
                 case PupilRecoveryMethod.NONE:
                     continue
 
@@ -257,24 +287,28 @@ class Pupil:
         # Abberate the pupil if necessary
         if zernike_coeffs is None:
             return pupil
-        return aberrate_pupil(pupil, zernike_coeffs)
+        return update_phase(pupil, zernike_coeffs)
 
 
-def aberrate_pupil(pupil: Pupil, zernike_coeffs: list[float]) -> NDArray[np.complex128]:
-    """Returns an aberrated pupil.
+def update_phase(
+    pupil: Pupil, zernike_coeffs: list[float], phi: float = 1
+) -> NDArray[np.complex128]:
+    """Replace the phase of a pupil with one defined by the given Zernike coefficients.
 
     Parameters
     ----------
     pupil : Pupil
-        An unaberrated pupil. A deep copy will be made so that the input is unchanged.
+        A pupil. A deep copy will be made so that the input is unchanged.
     zernike_coeffs : list[float]
-        Zernike coefficients of the aberrated pupil. The first coefficient corresponds to Noll
+        Zernike coefficients of the new pupil. The first coefficient corresponds to Noll
         index 1, the second to Noll index 2, etc.
+    phi: float
+        A phase coefficient
 
     Returns
     -------
     new_pupil : npt.NDArray[np.complex128]
-        An aberrated pupil.
+        An updated pupil.
 
     """
     num_px = pupil.p.shape[0]
@@ -290,6 +324,6 @@ def aberrate_pupil(pupil: Pupil, zernike_coeffs: list[float]) -> NDArray[np.comp
     zernike = Zernike(x_range, y_range, shape, radial_degree)
 
     new_pupil = deepcopy(pupil)
-    new_pupil.p[:] *= np.exp(1j * zernike(zernike_coeffs))
+    new_pupil.p[:] = np.abs(new_pupil.p[:]) * np.exp(1j * phi * zernike(zernike_coeffs))
 
     return new_pupil
