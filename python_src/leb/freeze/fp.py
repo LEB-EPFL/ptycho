@@ -54,6 +54,9 @@ def fp_recover(
     alpha_P : float
         The rPIE algorithm parameter for updating the pupil. This is only used if
         pupil_recovery_method is PupilRecoveryMethod.rPIE.
+    num_zernike_coeffs : int
+        The number of Zernike coefficients to use in the pupil recovery. This is only used if
+        pupil_recovery_method is PupilRecoveryMethod.GD.
 
     Returns
     -------
