@@ -153,7 +153,7 @@ def fp_recover(
                             ifft2(ifftshift(low_res_img_fft * np.pi * zernike_mode.p)) / dx / dx
                         )
                         # Gradient with respect to each weight
-                        gradient = 2 * np.sum(img_diff * np.imag(np.conj(low_res_img * gd_temp)))
+                        gradient = 2 * np.sum(img_diff * np.imag(np.conj(low_res_img) * gd_temp))
                         # Update each Zernike coefficient
                         target_zernike_coeffs[j] += 10e-6 * gradient
                     target_pupil = update_phase(zernike_mode, target_zernike_coeffs, np.pi)
