@@ -96,3 +96,4 @@ class Zernike:
     def num_modes(self) -> int:
         """Returns the number of Zernike modes."""
         return self._z.nk
+    
