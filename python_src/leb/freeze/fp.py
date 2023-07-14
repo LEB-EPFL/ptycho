@@ -23,7 +23,7 @@ class PupilRecoveryMethod(Enum):
     NONE = "None"
 
 
-def fp_recover(
+def fp_recover_k(
     dataset: FPDataset,
     pupil: "Pupil",
     num_iterations: int = 10,
@@ -75,7 +75,14 @@ def fp_recover(
     target_fft = dx * dx * fftshift(fft2(target))
     target_pupil = deepcopy(pupil)
 
+    zernike_things = np.angle(target_pupil.p)
+
     original_size_px = dataset.images.shape[1]
+
+    # number of Zernike modes
+    num_mode = 6
+    weights = ([0.3, 0.5, 0.3, 0.6, 0.8, 0.3, 0.1, 0.2, 0.1, 0.3]) #skąd one, jak je zawołać?
+    
 
     for i in range(num_iterations):
         for image, wavevector, _ in dataset:
@@ -108,6 +115,8 @@ def fp_recover(
             # Leave the phase unchanged.
             low_res_img = np.abs(image) * np.exp(1j * np.angle(low_res_img))
 
+            [m,n] = low_res_img.shape #m,n na później
+
             # Update the target_fft with the new slice data using the rPIE algorithm
             next_low_res_img_fft = dx * dx * fftshift(fft2(low_res_img))
             current_slice_fft += (
@@ -131,9 +140,26 @@ def fp_recover(
                         * (next_low_res_img_fft - low_res_img_fft)
                     )
                 case PupilRecoveryMethod.GD:
-                    print("Kasia")
-                    raise NotImplementedError
-
+                    low_res_img_fft = (1 / upsampling_factor)** 2 * current_slice_fft * target_pupil.p #czy tu .p czy .p[:] czy w ogole bez p
+                    low_res_img = ifft2(ifftshift(low_res_img_fft)) / dx / dx
+                    img_diff = (1 / np.max(upsampling_factor ** 2 * image)) * (1 - upsampling_factor ** 2 * image / np.abs(low_res_img))
+                    
+                    for j in range(0, num_mode): 
+                        gd_temp = ifft2(ifftshift(low_res_img_fft * np.pi * zernike_things[j]/weights[j])) / dx / dx #złe indeksowanie zernike_modes, napraw!
+                        # Gradient with respect to each weight
+                        gradient = 2 * np.sum(img_diff * np.imag(np.conj(low_res_img * gd_temp)))
+                        # Update each weight
+                        weights[j] += (1 * 10e-6 * gradient)
+                    tmpzfun = np.zeros((m,n)) # weź jakoś mądrzej nazwij tę funkcję
+                    for j in range(0, num_mode):
+                        # Update the weight sum of Zernike modes
+                        tmpzfun += (weights[j] * zernike_things[j]/weights[j]) #złe indeksowanie, patrz ten sam problem wyżej
+                
+                    fitted_weights = (coscoscos).fit(zernike_things)
+                    target_pupil.p[:] = np.exp(1j * np.pi * coscoscos(fitted_weights)) # *lowFilter????
+                #    #Update the pupil function
+                #    target_pupil.p[:] = np.exp(1j * np.pi * tmpzfun) # *lowFilter????
+                     
                 case PupilRecoveryMethod.NONE:
                     continue
 
