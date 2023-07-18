@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented gradient descent pupil recovery in `fp_recover` reconstruction.
 - Added a `show_progress` parameter to `fp_recover` to toggle a progress bar during reconstruction.
 
+### Fixed
+
+- Fixed pupil recovery using the `PupilRecoveryMethod.rPIE` method by zeroing values outside the
+  pupil radius.
+
 ## [1.1.1] - 2023-07-10
 
 ### Fixed

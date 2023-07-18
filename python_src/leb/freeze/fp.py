@@ -130,7 +130,7 @@ def fp_recover(
             # Update the pupil function
             match pupil_recovery_method:
                 case PupilRecoveryMethod.rPIE:
-                    target_pupil.p[:] += (
+                    update_term = (
                         np.conj(current_slice_fft)
                         / (
                             (1 - alpha_P) * abs(current_slice_fft) ** 2
@@ -138,6 +138,7 @@ def fp_recover(
                         )
                         * (next_low_res_img_fft - low_res_img_fft)
                     )
+                    target_pupil.set_p(target_pupil.p + update_term)
                 case PupilRecoveryMethod.GD:
                     low_res_img_fft = (
                         (1 / upsampling_factor) ** 2 * current_slice_fft * target_pupil.p
@@ -233,7 +234,7 @@ class Pupil:
     def from_system_params(
         cls,
         num_px: int = 512,
-        px_size_um: float = 11,
+        px_size_um: float = 5.86,
         wavelength_um: float = 0.488,
         mag: float = 10.0,
         na: float = 0.288,
@@ -288,6 +289,30 @@ class Pupil:
         if zernike_coeffs is None:
             return pupil
         return update_phase(pupil, zernike_coeffs)
+
+    def set_p(self, pupil: NDArray[np.complex128]):
+        """Updates the pupil function data without making a copy.
+
+        Parameters
+        ----------
+        pupil : np.ndarray
+            A complex pupil function. Must have the same shape as the current pupil.
+
+        """
+        if pupil.shape != self.p.shape:
+            raise ValueError(f"Expected pupil of shape {self.p.shape}, got {pupil.shape}")
+        if pupil.dtype != np.complex128:
+            raise ValueError(f"Expected pupil of dtype np.complex128, got {pupil.dtype}")
+
+        self.p[:] = pupil
+
+        # Set values outside the pupil radius to zero
+        y, x = np.ogrid[
+            -self.p.shape[0] // 2 : self.p.shape[0] // 2,
+            -self.p.shape[1] // 2 : self.p.shape[1] // 2,
+        ]
+        mask = x**2 + y**2 > self.pupil_radius_px**2
+        self.p[mask] = 0
 
 
 def update_phase(
