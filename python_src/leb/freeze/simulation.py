@@ -16,7 +16,7 @@ from leb.freeze.fp import Pupil, slice_fft
 def fp_simulation(
     gt_img_size: int = 256,
     upsampling_factor: int = 4,
-    px_size_um: float = 11,
+    px_size_um: float = 5.86,
     wavelength_um: float = 0.488,
     mag: float = 10.0,
     na: float = 0.288,

@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented gradient descent pupil recovery in `fp_recover` reconstruction.
 - Added a `show_progress` parameter to `fp_recover` to toggle a progress bar during reconstruction.
 
+### Changed
+
+- The default pixel size in `fp_simulation` and `Pupil.from_system_params` is now 5.86 um to match
+  the pixel size of the new Flir Grasshopper 3 camera.
+
+### Fixed
+
+- Fixed pupil recovery using the `PupilRecoveryMethod.rPIE` method by zeroing values outside the
+  pupil radius.
+
 ## [1.1.1] - 2023-07-10
 
 ### Fixed
