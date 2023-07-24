@@ -97,61 +97,6 @@ def fake_stack_hdr_data():
         ],
         dtype=float,
     )
-    imgs = np.array([img1, img2, img3])
-    stack1 = np.array([img1, img1])
-    stack2 = np.array([img2, img2])
-    stack3 = np.array([img3, img3])
-    stacks = np.array([stack1, stack2, stack3])
-    dark_frame = np.ones((5, 5)) * 2
-    exposure_rel_times = np.array((1, 10, 200))
-    gain = np.array((30, 30, 30))  # in dB
-    minthreshold = 30
-    maxthreshold = 200
-    expected = np.array(
-        [
-            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
-            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
-            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
-            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
-            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
-        ]
-    )
-    expected_array = np.array([expected, expected])
-    return stacks, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected_array
-
-
-@pytest.fixture
-def fake_stack_hdr_data_new():
-    img1 = np.array(
-        [
-            [2.5, 2.5, 2.5, 2.5, 2.5],
-            [2.5, 2, 5, 8, 2.5],
-            [2.5, 1, 1, 1, 2.5],
-            [2.5, 1, 5, 5, 2.5],
-            [2.5, 2.5, 2.5, 2.5, 2.5],
-        ],
-        dtype=float,
-    )
-    img2 = np.array(
-        [
-            [2.5, 2.5, 2.5, 2.5, 2.5],
-            [2.5, 1, 5, 8, 2.5],
-            [2.5, 2, 1, 5, 2.5],
-            [2.5, 5, 5, 8, 2.5],
-            [2.5, 2.5, 2.5, 2.5, 2.5],
-        ],
-        dtype=float,
-    )
-    img3 = np.array(
-        [
-            [2.5, 2.5, 2.5, 2.5, 2.5],
-            [2.5, 1, 5, 8, 2.5],
-            [2.5, 5, 8, 5, 2.5],
-            [2.5, 8, 8, 9, 2.5],
-            [2.5, 2.5, 2.5, 2.5, 2.5],
-        ],
-        dtype=float,
-    )
     img11 = np.stack((img1,) * 2)
     img22 = np.stack((img2,) * 2)
     img33 = np.stack((img3,) * 2)
@@ -315,8 +260,8 @@ def test_hdr_image_creation(fake_single_hdr_data):
     assert_array_almost_equal(hdr, expected)
 
 
-def test_hdr_stack_creation(fake_stack_hdr_data_new):
-    datasets, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected_dataset = fake_stack_hdr_data_new
+def test_hdr_stack_creation(fake_stack_hdr_data):
+    datasets, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected_dataset = fake_stack_hdr_data
     
     hdr_dataset = hdr_stack(datasets, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold)
 
