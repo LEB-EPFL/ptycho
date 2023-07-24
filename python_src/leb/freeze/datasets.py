@@ -245,6 +245,8 @@ def hdr_combine(
     dark_fr: NDArray[np.float64],
     expo_times: NDArray[np.int16],
     gain: NDArray[np.float64],
+    minthreshold: int = 5,
+    maxthreshold: int = 235
 ) -> NDArray[np.float64]:
     """
     Combines images taken over different exposure times into an HDR image
@@ -280,8 +282,8 @@ def hdr_combine(
     # expo_array = expo_times
 
     # Threshold of under-/overexposure
-    minclip = 30
-    maxclip = 200
+    minclip = minthreshold
+    maxclip = maxthreshold
 
     hdr = np.zeros((ldr_array.shape[1], ldr_array.shape[2]))
     properly_exposed_count = np.zeros(hdr.shape)

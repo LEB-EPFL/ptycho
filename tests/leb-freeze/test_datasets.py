@@ -51,6 +51,8 @@ def fake_hdr_data():
     dark_frame = np.ones((5, 5)) * 2
     exposure_rel_times = np.array((1, 10, 200))
     gain = np.array((30, 30, 30))  # in dB
+    minthreshold = 30
+    maxthreshold = 200
     expected = np.array(
         [
             [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
@@ -60,7 +62,7 @@ def fake_hdr_data():
             [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
         ]
     )
-    return imgs, dark_frame, exposure_rel_times, gain, expected
+    return imgs, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected
 
 
 def test_ptychodataset(fake_data):
@@ -193,8 +195,8 @@ def test_ptychodataset_different_number_of_led_indexes(fake_data):
 
 
 def test_hdr_image_creation(fake_hdr_data):
-    imgs, dark_frame, exposure_rel_times, gain, expected = fake_hdr_data
+    imgs, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected = fake_hdr_data
 
-    hdr = hdr_combine(imgs, dark_frame, exposure_rel_times, gain)
+    hdr = hdr_combine(imgs, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold)
 
     assert_array_almost_equal(hdr, expected)
