@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test data for the Jupyter notebooks are now part of the repository.
 - Implemented gradient descent pupil recovery in `fp_recover` reconstruction.
 - Added a `show_progress` parameter to `fp_recover` to toggle a progress bar during reconstruction.
+- Added a function `hdr_combine` to combine low dynamic range images into a single HDR image. This
+  can be used for calibrations.
 
 ### Changed
 
