@@ -120,6 +120,64 @@ def fake_stack_hdr_data():
     return stacks, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected_array
 
 
+@pytest.fixture
+def fake_stack_hdr_data_new():
+    img1 = np.array(
+        [
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+            [2.5, 2, 5, 8, 2.5],
+            [2.5, 1, 1, 1, 2.5],
+            [2.5, 1, 5, 5, 2.5],
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+        ],
+        dtype=float,
+    )
+    img2 = np.array(
+        [
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+            [2.5, 1, 5, 8, 2.5],
+            [2.5, 2, 1, 5, 2.5],
+            [2.5, 5, 5, 8, 2.5],
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+        ],
+        dtype=float,
+    )
+    img3 = np.array(
+        [
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+            [2.5, 1, 5, 8, 2.5],
+            [2.5, 5, 8, 5, 2.5],
+            [2.5, 8, 8, 9, 2.5],
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+        ],
+        dtype=float,
+    )
+    img11 = np.stack((img1,) * 2)
+    img22 = np.stack((img2,) * 2)
+    img33 = np.stack((img3,) * 2)
+    dataset1 = FPDataset(images = img11, wavevectors = np.zeros((2, 3), dtype=np.float32), led_indexes = np.zeros((2, 2), dtype=np.int32))
+    dataset2 = FPDataset(images = img22, wavevectors = np.zeros((2, 3), dtype=np.float32), led_indexes = np.zeros((2, 2), dtype=np.int32))
+    dataset3 = FPDataset(images = img33, wavevectors = np.zeros((2, 3), dtype=np.float32), led_indexes = np.zeros((2, 2), dtype=np.int32))
+    datasets = [dataset1, dataset2, dataset3]
+    dark_frame = np.ones((5, 5)) * 2
+    exposure_rel_times = np.array((1, 10, 200))
+    gain = np.array((30, 30, 30))  # in dB
+    minthreshold = 30
+    maxthreshold = 200
+    expected_image = np.array(
+        [
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+        ]
+    )
+    expected_images = np.stack((expected_image,) * 2)
+    expected_dataset = FPDataset(images = expected_images, wavevectors = np.zeros((2, 3), dtype=np.float32), led_indexes = np.zeros((2, 2), dtype=np.int32))    
+    return datasets, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected_dataset
+
+
 def test_ptychodataset(fake_data):
     """Test the PtychoDataset class."""
     images, wavevectors, led_indexes = fake_data
@@ -256,9 +314,10 @@ def test_hdr_image_creation(fake_single_hdr_data):
 
     assert_array_almost_equal(hdr, expected)
 
-def test_hdr_stack_creation(fake_stack_hdr_data):
-    stacks, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected_array = fake_stack_hdr_data
 
-    hdr_array = hdr_stack(stacks, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold)
+def test_hdr_stack_creation(fake_stack_hdr_data_new):
+    datasets, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected_dataset = fake_stack_hdr_data_new
+    
+    hdr_dataset = hdr_stack(datasets, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold)
 
-    assert_array_almost_equal(hdr_array, expected_array)
+    assert_array_almost_equal(hdr_dataset.images, expected_dataset.images)
