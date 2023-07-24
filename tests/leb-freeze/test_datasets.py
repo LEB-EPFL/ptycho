@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from numpy.testing import assert_array_almost_equal
 
 from leb.freeze.datasets import FPDataset
 
@@ -157,4 +158,8 @@ def test_ptychodataset_different_number_of_led_indexes(fake_data):
 
 def test_hdr_image_creation(fake_hdr_data):
     imgs, dark_frame, exposure_rel_times, gain, expected = fake_hdr_data
+    
+    hdr = hdr_combine(imgs, dark_frame, exposure_rel_times, gain)
+
+    assert assert_array_almost_equal(hdr, expected)
     raise NotImplementedError
