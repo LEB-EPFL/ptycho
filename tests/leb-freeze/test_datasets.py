@@ -14,6 +14,18 @@ def fake_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return images, wavevectors, led_indexes
 
 
+@pytest.fixture
+def fake_hdr_data():
+    img1 = np.array([[2.5,2.5,2.5,2.5,2.5],[2.5,2,5,8,2.5],[2.5,1,1,1,2.5],[2.5,1,5,5,2.5],[2.5,2.5,2.5,2.5,2.5]], dtype=float)
+    img2 = np.array([[2.5,2.5,2.5,2.5,2.5],[2.5,1,5,8,2.5],[2.5,2,1,5,2.5],[2.5,5,5,8,2.5],[2.5,2.5,2.5,2.5,2.5]], dtype=float)
+    img3 = np.array([[2.5,2.5,2.5,2.5,2.5],[2.5,1,5,8,2.5],[2.5,5,8,5,2.5],[2.5,8,8,9,2.5],[2.5,2.5,2.5,2.5,2.5]], dtype=float)
+    imgs = [img1, img2, img3]
+    dark_frame = np.ones((5,5)) * 2
+    exposure_rel_times = np.array((1, 10, 200))
+    gain = np.array((30, 30, 30)) #in dB
+    expected = np.array([[0.2125, 0.2125, 0.2125, 0.2125, 0.2125], [0.2125, 0.2125, 0.2125, 0.2125, 0.2125], [0.2125, 0.2125, 0.2125, 0.2125, 0.2125], [0.2125, 0.2125, 0.2125, 0.2125, 0.2125], [0.2125, 0.2125, 0.2125, 0.2125, 0.2125]])
+    return imgs, dark_frame, exposure_rel_times, gain, expected
+
 def test_ptychodataset(fake_data):
     """Test the PtychoDataset class."""
     images, wavevectors, led_indexes = fake_data
@@ -141,3 +153,8 @@ def test_ptychodataset_different_number_of_led_indexes(fake_data):
 
     with pytest.raises(ValueError):
         FPDataset(images, wavevectors, led_indexes)
+
+
+def test_hdr_image_creation(fake_hdr_data):
+    imgs, dark_frame, exposure_rel_times, gain, expected = fake_hdr_data
+    raise NotImplementedError
