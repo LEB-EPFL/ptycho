@@ -398,8 +398,8 @@ def hdr_stack(
 
     Returns
     -------
-    NDArray[np.float64]
-        3D array of hdr images
+    FPDataset
+        dataset with hdr images
     """
     ldr_stacks = np.zeros([len(datasets), datasets[0].images.shape[0], datasets[0].images.shape[1], datasets[0].images.shape[2]])
     for i in range(0, len(datasets)):
