@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 
-from leb.freeze.datasets import FPDataset, hdr_combine
+from leb.freeze.datasets import FPDataset, hdr_combine, hdr_stack
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def fake_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 @pytest.fixture
-def fake_hdr_data():
+def fake_single_hdr_data():
     img1 = np.array(
         [
             [2.5, 2.5, 2.5, 2.5, 2.5],
@@ -63,6 +63,61 @@ def fake_hdr_data():
         ]
     )
     return imgs, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected
+
+
+@pytest.fixture
+def fake_stack_hdr_data():
+    img1 = np.array(
+        [
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+            [2.5, 2, 5, 8, 2.5],
+            [2.5, 1, 1, 1, 2.5],
+            [2.5, 1, 5, 5, 2.5],
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+        ],
+        dtype=float,
+    )
+    img2 = np.array(
+        [
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+            [2.5, 1, 5, 8, 2.5],
+            [2.5, 2, 1, 5, 2.5],
+            [2.5, 5, 5, 8, 2.5],
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+        ],
+        dtype=float,
+    )
+    img3 = np.array(
+        [
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+            [2.5, 1, 5, 8, 2.5],
+            [2.5, 5, 8, 5, 2.5],
+            [2.5, 8, 8, 9, 2.5],
+            [2.5, 2.5, 2.5, 2.5, 2.5],
+        ],
+        dtype=float,
+    )
+    imgs = np.array([img1, img2, img3])
+    stack1 = np.array([img1, img1])
+    stack2 = np.array([img2, img2])
+    stack3 = np.array([img3, img3])
+    stacks = np.array([stack1, stack2, stack3])
+    dark_frame = np.ones((5, 5)) * 2
+    exposure_rel_times = np.array((1, 10, 200))
+    gain = np.array((30, 30, 30))  # in dB
+    minthreshold = 30
+    maxthreshold = 200
+    expected = np.array(
+        [
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+            [0.2125, 0.2125, 0.2125, 0.2125, 0.2125],
+        ]
+    )
+    expected_array = np.array([expected, expected])
+    return stacks, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected_array
 
 
 def test_ptychodataset(fake_data):
@@ -194,9 +249,16 @@ def test_ptychodataset_different_number_of_led_indexes(fake_data):
         FPDataset(images, wavevectors, led_indexes)
 
 
-def test_hdr_image_creation(fake_hdr_data):
-    imgs, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected = fake_hdr_data
+def test_hdr_image_creation(fake_single_hdr_data):
+    imgs, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected = fake_single_hdr_data
 
     hdr = hdr_combine(imgs, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold)
 
     assert_array_almost_equal(hdr, expected)
+
+def test_hdr_stack_creation(fake_stack_hdr_data):
+    stacks, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold, expected_array = fake_stack_hdr_data
+
+    hdr_array = hdr_stack(stacks, dark_frame, exposure_rel_times, gain, minthreshold, maxthreshold)
+
+    assert_array_almost_equal(hdr_array, expected_array)

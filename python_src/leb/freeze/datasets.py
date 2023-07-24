@@ -10,6 +10,7 @@ from numpy.typing import NDArray
 import scipy.ndimage as sci
 from skimage.restoration import inpaint
 import tifffile
+from tqdm import tqdm
 
 from leb.freeze.calibration import Calibration, LEDIndexes, calibrate_rectangular_matrix
 
@@ -375,3 +376,33 @@ def hdr_combine(
     hdr_final = inpaint.inpaint_biharmonic(hdr, mask)
 
     return hdr_final
+
+def hdr_stack(
+    ldr_stacks: NDArray[np.float64], dark_fr: NDArray[np.float64],
+    expo_times: NDArray[np.int16], gain: NDArray[np.float64], 
+    minthreshold: int = 5, maxthreshold: int=235 
+) -> NDArray[np.float64]:
+    """
+    Creates a stack of HDR images from ldr images
+
+    Parameters
+    ----------
+    ldr_stacks: NDArray[np.float64]
+        4D array of ldr images
+    dark_fr: NDArray[np.float64]
+        Dark background image (2D array)
+    expo_times: NDArray[np.int16]
+        Relative exposure times
+    gain: NDArray[np.float64]
+        Gain for each stack of images
+
+    Returns
+    -------
+    NDArray[np.float64]
+        3D array of hdr images
+    """
+    sets_nb = ldr_stacks.shape[1]
+    hdr_array = np.zeros((ldr_stacks.shape[1], ldr_stacks.shape[2], ldr_stacks.shape[3]))
+    for i in tqdm(range(0, sets_nb)):
+        hdr_array[i,:,:] = hdr_combine(ldr_stacks[:,i,:,:], dark_fr, expo_times, gain, minthreshold, maxthreshold)
+    return hdr_array
