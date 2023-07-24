@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 
-from leb.freeze.datasets import FPDataset
+from leb.freeze.datasets import FPDataset, hdr_combine
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def fake_hdr_data():
     img1 = np.array([[2.5,2.5,2.5,2.5,2.5],[2.5,2,5,8,2.5],[2.5,1,1,1,2.5],[2.5,1,5,5,2.5],[2.5,2.5,2.5,2.5,2.5]], dtype=float)
     img2 = np.array([[2.5,2.5,2.5,2.5,2.5],[2.5,1,5,8,2.5],[2.5,2,1,5,2.5],[2.5,5,5,8,2.5],[2.5,2.5,2.5,2.5,2.5]], dtype=float)
     img3 = np.array([[2.5,2.5,2.5,2.5,2.5],[2.5,1,5,8,2.5],[2.5,5,8,5,2.5],[2.5,8,8,9,2.5],[2.5,2.5,2.5,2.5,2.5]], dtype=float)
-    imgs = [img1, img2, img3]
+    imgs = np.array([img1, img2, img3])
     dark_frame = np.ones((5,5)) * 2
     exposure_rel_times = np.array((1, 10, 200))
     gain = np.array((30, 30, 30)) #in dB
@@ -161,5 +161,4 @@ def test_hdr_image_creation(fake_hdr_data):
     
     hdr = hdr_combine(imgs, dark_frame, exposure_rel_times, gain)
 
-    assert assert_array_almost_equal(hdr, expected)
-    raise NotImplementedError
+    assert_array_almost_equal(hdr, expected)

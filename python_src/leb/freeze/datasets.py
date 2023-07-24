@@ -6,6 +6,9 @@ from pathlib import Path
 from typing import Self
 
 import numpy as np
+from numpy.typing import NDArray
+import scipy.ndimage as sci
+from skimage.restoration import inpaint
 import tifffile
 
 from leb.freeze.calibration import Calibration, LEDIndexes, calibrate_rectangular_matrix
@@ -235,3 +238,129 @@ def parse_mm_metadata(
         led_indexes=led_indexes,
         center_led_index=(center_led_coord_x, center_led_coord_y),
     )
+
+
+def hdr_combine(
+    ldr_array: NDArray[np.float64], dark_fr: NDArray[np.float64],
+    expo_times: NDArray[np.int16], gain: NDArray[np.float64] 
+) -> NDArray[np.float64]:
+    """
+    Combines images taken over different exposure times into an HDR image
+
+    Parameters
+    ----------
+    ldr_array: NDArray[np.float64]
+        3D array of ldr images
+    dark_fr: NDArray[np.float64]
+        Dark background image (2D array)
+    expo_times: NDArray[np.int16]
+        Relative exposure times
+    gain: NDArray[np.float64]
+        Gain for each stack of images
+
+    Returns
+    -------
+    NDArray[np.float64]
+        single hdr image
+    """
+    # Create array of dark frames
+    dark_array = np.stack((dark_fr,) * ldr_array.shape[0])
+
+    # Normalise ldr & dark frame
+    norm_const = (255 / np.max(ldr_array))
+    ldr_array[0,:,:] = ldr_array[0,:,:] * norm_const
+    ldr_array[1,:,:] = ldr_array[1,:,:] * norm_const
+    ldr_array[2,:,:] = ldr_array[2,:,:] * norm_const
+    dark_array = dark_array * norm_const
+
+    # Array for scaling pixel signal in each image
+    expo_array = expo_times * 10 ** (gain / 20) 
+    #expo_array = expo_times
+
+    # Threshold of under-/overexposure
+    minclip = 30
+    maxclip = 200
+
+    hdr = np.zeros((ldr_array.shape[1], ldr_array.shape[2]))
+    properly_exposed_count = np.zeros(hdr.shape)
+
+    some_underexposed = np.zeros(hdr.shape, dtype=bool)
+    some_overexposed = np.zeros(hdr.shape, dtype=bool)
+    some_properly_exposed = np.zeros(hdr.shape, dtype=bool)
+
+    underexposed = np.zeros(hdr.shape, dtype=bool)
+    overexposed = np.zeros(hdr.shape, dtype=bool)
+    properly_exposed = np.zeros(hdr.shape, dtype=bool)
+
+    # Number of exposure times used
+    im_nb = ldr_array.shape[0]
+
+    for j in range(0, im_nb):
+        rel_expo = expo_array[j] 
+        # read LDR image
+        ldr = ldr_array[j,:,:]
+        dark_frame = dark_array[j,:,:]
+
+        
+        # Conditions for over-/under-/proper exposure
+        # test if this is the final (assumed highest) exposure 
+        if j!=im_nb-1:
+            underexposed = np.less(ldr, dark_frame + minclip)    
+        else:
+            underexposed = np.less(ldr, dark_frame) 
+        some_underexposed = np.logical_or(some_underexposed, underexposed) 
+
+        overexposed = np.greater(ldr, maxclip)
+        some_overexposed = np.logical_or(some_overexposed, overexposed)
+
+        properly_exposed = np.logical_not(np.logical_or(underexposed, overexposed))
+        some_properly_exposed = np.logical_or(some_properly_exposed, properly_exposed)
+
+        # Count how many times a pixel was deemed properly exposed
+        properly_exposed_count[properly_exposed] += 1
+
+        # Remove over- & underxposed values
+        ldr[np.logical_not(properly_exposed)] = 0 
+        dark_frame[np.logical_not(properly_exposed)] = 0
+
+        # Bring the intensity of the LDR image into a common HDR domain by "normalizing" 
+        # using the relative exposure, and then add it to the accumulator 
+        hdr += np.single(ldr - dark_frame) / rel_expo
+
+    # Average the values in the accumulator by the number of LDR images that contributed
+    # to each pixel to produce the HDR radiance map
+    one = np.ones(properly_exposed_count.shape)
+    hdr = hdr / np.maximum(properly_exposed_count, one)
+    # Normalise hdr
+    norm_hdr = (255 / np.max(hdr))
+    hdr = hdr * norm_hdr
+
+    # For pixels that were completely over-exposed, assign the maximum value 
+    # computed for the properly exposed pixels
+    arg_over = np.zeros(hdr.shape, dtype=bool)
+    arg_over = np.logical_and(some_overexposed, np.logical_and(np.logical_not(some_underexposed), np.logical_not(some_properly_exposed)))
+    if np.any(np.max(hdr[some_properly_exposed])):
+        hdr[arg_over] = np.max(hdr[some_properly_exposed])
+    else:
+        hdr[arg_over] = 255
+
+    # For pixels that were completely under-exposed, assign the minimum value 
+    # computed for the properly exposed pixels.
+    arg_under = np.zeros(hdr.shape, dtype=bool)
+    arg_under = np.logical_and(some_underexposed, np.logical_and(np.logical_not(some_overexposed), np.logical_not(some_properly_exposed)))
+    if np.any(np.min(hdr[some_properly_exposed])):
+        hdr[arg_under] = np.min(hdr[some_properly_exposed])
+    else:
+        hdr[arg_under] = 1
+
+    # For pixels that were sometimes underexposed, sometimes overexposed, 
+    # and never properly exposed, fill in based on neighbouring pixels
+    arg = np.zeros(hdr.shape, dtype=bool)
+    arg = np.logical_and(some_underexposed, np.logical_and(some_overexposed, np.logical_not(some_properly_exposed)))
+    
+    mask = np.zeros(hdr.shape)
+    mask = sci.binary_dilation(arg, np.ones((3,3)))
+    hdr_final = np.zeros(hdr.shape)
+    hdr_final = inpaint.inpaint_biharmonic(hdr, mask)
+
+    return hdr_final
