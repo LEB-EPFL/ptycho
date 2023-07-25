@@ -247,10 +247,9 @@ def hdr_combine(
     expo_times: NDArray[np.int16],
     gain: NDArray[np.float64],
     minthreshold: int = 5,
-    maxthreshold: int = 235
+    maxthreshold: int = 235,
 ) -> NDArray[np.float64]:
-    """
-    Combines images taken over different exposure times into an HDR image
+    """Combines images taken over different exposure times into an HDR image
 
     Parameters
     ----------
@@ -377,13 +376,16 @@ def hdr_combine(
 
     return hdr_final
 
+
 def hdr_stack(
-    datasets: list[FPDataset], dark_fr: NDArray[np.float64],
-    expo_times: NDArray[np.int16], gain: NDArray[np.float64], 
-    minthreshold: int = 5, maxthreshold: int=235 
+    datasets: list[FPDataset],
+    dark_fr: NDArray[np.float64],
+    expo_times: NDArray[np.int16],
+    gain: NDArray[np.float64],
+    minthreshold: int = 5,
+    maxthreshold: int = 235,
 ) -> FPDataset:
-    """
-    Creates a stack of HDR images from ldr images
+    """Creates a stack of HDR images from ldr images
 
     Parameters
     ----------
@@ -401,13 +403,24 @@ def hdr_stack(
     FPDataset
         dataset with hdr images
     """
-    ldr_stacks = np.zeros([len(datasets), datasets[0].images.shape[0], datasets[0].images.shape[1], datasets[0].images.shape[2]])
+    ldr_stacks = np.zeros(
+        [
+            len(datasets),
+            datasets[0].images.shape[0],
+            datasets[0].images.shape[1],
+            datasets[0].images.shape[2],
+        ]
+    )
     for i in range(0, len(datasets)):
-        ldr_stacks[i,:,:,:] = datasets[i].images
-    
+        ldr_stacks[i, :, :, :] = datasets[i].images
+
     sets_nb = ldr_stacks.shape[1]
     hdr_array = np.zeros((ldr_stacks.shape[1], ldr_stacks.shape[2], ldr_stacks.shape[3]))
     for i in tqdm(range(0, sets_nb)):
-        hdr_array[i,:,:] = hdr_combine(ldr_stacks[:,i,:,:], dark_fr, expo_times, gain, minthreshold, maxthreshold)
-    hdr_dataset = FPDataset(images = hdr_array, wavevectors = datasets[0].wavevectors, led_indexes = datasets[0].led_indexes)    
+        hdr_array[i, :, :] = hdr_combine(
+            ldr_stacks[:, i, :, :], dark_fr, expo_times, gain, minthreshold, maxthreshold
+        )
+    hdr_dataset = FPDataset(
+        images=hdr_array, wavevectors=datasets[0].wavevectors, led_indexes=datasets[0].led_indexes
+    )
     return hdr_dataset
