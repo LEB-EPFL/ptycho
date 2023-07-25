@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `show_progress` parameter to `fp_recover` to toggle a progress bar during reconstruction.
 - Added a function `hdr_combine` to combine low dynamic range images into a single HDR image. This
   can be used for calibrations.
+- Added a function `hdr_stack` to combine multiple, low dynamic range FPDatasets into a single HDR
+  FPDataset.
 
 ### Changed
 
