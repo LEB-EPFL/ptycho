@@ -403,6 +403,7 @@ def hdr_stack(
     FPDataset
         dataset with hdr images
     """
+    # dimensions are nb. of datasets, nb. of illumination angles, nb. of rows, nb. of columns
     ldr_stacks = np.zeros(
         [
             len(datasets),
