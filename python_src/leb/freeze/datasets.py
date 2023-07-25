@@ -396,7 +396,7 @@ def hdr_stack(
     expo_times: NDArray[np.int16]
         Relative exposure times
     gain: NDArray[np.float64]
-        Gain for each stack of images
+        Gain for each stack of images in dB
 
     Returns
     -------
