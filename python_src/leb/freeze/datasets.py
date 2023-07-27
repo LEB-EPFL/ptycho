@@ -243,8 +243,8 @@ def parse_mm_metadata(
 
 def hdr_combine(
     ldr_array: NDArray[np.float64],
-    dark_fr: NDArray[np.float64],
-    expo_times: NDArray[np.int16],
+    dark_array: NDArray[np.float64],
+    expo_times: NDArray[np.float64],
     gain: NDArray[np.float64],
     minthreshold: int = 5,
     maxthreshold: int = 235,
@@ -255,9 +255,9 @@ def hdr_combine(
     ----------
     ldr_array: NDArray[np.float64]
         3D array of ldr images
-    dark_fr: NDArray[np.float64]
-        Dark background image (2D array)
-    expo_times: NDArray[np.int16]
+    dark_array: NDArray[np.float64]
+        Dark background image for each dataset (3D array)
+    expo_times: NDArray[np.float64]
         Relative exposure times
     gain: NDArray[np.float64]
         Gain for each stack of images
@@ -268,7 +268,7 @@ def hdr_combine(
         single hdr image
     """
     # Create array of dark frames
-    dark_array = np.stack((dark_fr,) * ldr_array.shape[0])
+    #dark_array = np.stack((dark_fr,) * ldr_array.shape[0])
 
     # Normalise ldr & dark frame
     norm_const = 255 / np.max(ldr_array)
@@ -380,7 +380,7 @@ def hdr_combine(
 def hdr_stack(
     datasets: list[FPDataset],
     dark_fr: NDArray[np.float64],
-    expo_times: NDArray[np.int16],
+    expo_times: NDArray[np.float64],
     gain: NDArray[np.float64],
     minthreshold: int = 5,
     maxthreshold: int = 235,
@@ -392,8 +392,8 @@ def hdr_stack(
     datasets: list[FPDataset]
         List of datasets of ldr images taken under dfferent exposure times
     dark_fr: NDArray[np.float64]
-        Dark background image (2D array)
-    expo_times: NDArray[np.int16]
+        Dark background images for each dataset (3D array)
+    expo_times: NDArray[np.float64]
         Relative exposure times
     gain: NDArray[np.float64]
         Gain for each stack of images in dB
