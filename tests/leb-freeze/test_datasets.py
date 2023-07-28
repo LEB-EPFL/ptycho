@@ -24,7 +24,7 @@ def fake_single_hdr_data():
     Properly exposed (p): between 3 and 7
     Underexposed (u):     < 3
         Note: For the longest exposure time image (img3), the hdr_combine function checks for underexposed pixels by comparing them to the dark_frame pixel values (rather than dark_frame + minthreshold). 
-        It means that the pixels with a value of 2.5 are underexposed for img1 and img2, but are marked as properly exposed for img3
+        It means that the pixels with value of 2.5 are underexposed for img1 and img2, but are marked as properly exposed for img3
 
     Pixels in positions [0,:], [4,:], [:,0] and [:,4] of each matrix verify the difference in the definition of underexposed pixels between img3 and the other images.
     The other pixels verify the following cases:
@@ -73,6 +73,7 @@ def fake_single_hdr_data():
     dark_frames = np.array([dark_frame, dark_frame, dark_frame])
     exposure_rel_times = np.array((1, 10, 200))
     gain = np.array((30, 30, 30))  # in dB
+    #min- amd maxthreshold set the properly exposed pixels values between 3 and 7 after the normalisation in hdr_combine function
     minthreshold = 30
     maxthreshold = 200
     expected = np.array(
