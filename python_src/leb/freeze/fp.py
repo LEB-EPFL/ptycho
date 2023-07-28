@@ -11,7 +11,7 @@ from skimage.transform import rescale
 from tqdm import tqdm
 
 from leb.freeze.datasets import FPDataset
-from leb.freeze.zernike import Zernike
+from leb.freeze.zernike import MAX_NUM_ZERNIKE_COEFFS, Zernike
 
 
 class FPRecoveryError(Exception):
@@ -153,16 +153,19 @@ def fp_recover(
                         # Create a pupil comprised of a single Zernike mode
                         temp_coeffs = [0] * num_zernike_coeffs
                         temp_coeffs[j] = coeff
-                        zernike_mode = update_phase(target_pupil, temp_coeffs)
+                        zernike_mode = target_pupil.zernike(temp_coeffs)
 
-                        gd_temp = (
-                            ifft2(ifftshift(low_res_img_fft * np.pi * zernike_mode.p)) / dx / dx
-                        )
+                        gd_temp = ifft2(ifftshift(low_res_img_fft * np.pi * zernike_mode)) / dx / dx
                         # Gradient with respect to each weight
                         gradient = 2 * np.sum(img_diff * np.imag(np.conj(low_res_img) * gd_temp))
                         # Update each Zernike coefficient
                         target_zernike_coeffs[j] += 10e-6 * gradient
-                    target_pupil = update_phase(zernike_mode, target_zernike_coeffs, np.pi)
+
+                    # Construct the final pupil data
+                    phase = target_pupil.zernike(target_zernike_coeffs)
+                    new_pupil_data = np.abs(target_pupil.p) + np.exp(1j * np.pi * phase)
+
+                    target_pupil.set_p(new_pupil_data)
                 case PupilRecoveryMethod.NONE:
                     continue
 
@@ -229,6 +232,7 @@ class Pupil:
     k_S: float
     dk: float
     pupil_radius_px: int
+    zernike: Zernike
 
     @classmethod
     def from_system_params(
@@ -283,12 +287,50 @@ class Pupil:
         mask = x**2 + y**2 > pupil_radius_px**2
         pupil_data[mask] = 0
 
-        pupil = Pupil(pupil_data, k_S, dk, pupil_radius_px)
-
         # Abberate the pupil if necessary
         if zernike_coeffs is None:
-            return pupil
-        return update_phase(pupil, zernike_coeffs)
+            zernike_coeffs = [0.0] * MAX_NUM_ZERNIKE_COEFFS
+
+        zernike = cls._setup_zernike((num_px, num_px), pupil_radius_px, zernike_coeffs)
+        pupil_data *= np.exp(1j * zernike(zernike_coeffs))
+        pupil = Pupil(pupil_data, k_S, dk, pupil_radius_px, zernike)
+
+        return pupil
+
+    @staticmethod
+    def _setup_zernike(
+        grid_shape: tuple[int, int], pupil_radius_px: int, zernike_coeffs: list[float]
+    ) -> Zernike:
+        """Creates a Zernike object for computing Zernike coefficients.
+
+        This method is an optimization that is used to avoid creating a new Zernike object every
+        time the pupil's phase is updated. The pupil can hold onto the Zernike object and reuse it.
+
+        Parameters
+        ----------
+        pupil : Pupil
+            The pupil function.
+        zernike_coeffs : list[float]
+            Zernike coefficients of the aberrated pupil. The first coefficient corresponds to Noll
+            index 1, the second to Noll index 2, etc.
+
+        Returns
+        -------
+        Zernike
+            A Zernike object.
+
+        """
+        num_px = grid_shape[0]
+
+        num_noll_indexes = len(zernike_coeffs)
+        radial_degree, _ = Zernike.noll_to_zernike(num_noll_indexes)
+
+        # Radial distance 2 * np.pi * na / wavelength_um / dk should correspond to a value of 1
+        x_range = (-num_px / pupil_radius_px / 2, num_px / pupil_radius_px / 2)
+        y_range = (-num_px / pupil_radius_px / 2, num_px / pupil_radius_px / 2)
+        shape = (num_px, num_px)
+
+        return Zernike(x_range, y_range, shape, radial_degree)
 
     def set_p(self, pupil: NDArray[np.complex128]):
         """Updates the pupil function data without making a copy.
@@ -313,42 +355,3 @@ class Pupil:
         ]
         mask = x**2 + y**2 > self.pupil_radius_px**2
         self.p[mask] = 0
-
-
-def update_phase(
-    pupil: Pupil, zernike_coeffs: list[float], phi: float = 1
-) -> NDArray[np.complex128]:
-    """Replace the phase of a pupil with one defined by the given Zernike coefficients.
-
-    Parameters
-    ----------
-    pupil : Pupil
-        A pupil. A deep copy will be made so that the input is unchanged.
-    zernike_coeffs : list[float]
-        Zernike coefficients of the new pupil. The first coefficient corresponds to Noll
-        index 1, the second to Noll index 2, etc.
-    phi: float
-        A phase coefficient
-
-    Returns
-    -------
-    new_pupil : npt.NDArray[np.complex128]
-        An updated pupil.
-
-    """
-    num_px = pupil.p.shape[0]
-    pupil_radius_px = pupil.pupil_radius_px
-
-    num_noll_indexes = len(zernike_coeffs)
-    radial_degree, _ = Zernike.noll_to_zernike(num_noll_indexes)
-
-    # Radial distance 2 * np.pi * na / wavelength_um / dk should correspond to a value of 1
-    x_range = (-num_px / pupil_radius_px / 2, num_px / pupil_radius_px / 2)
-    y_range = (-num_px / pupil_radius_px / 2, num_px / pupil_radius_px / 2)
-    shape = (num_px, num_px)
-    zernike = Zernike(x_range, y_range, shape, radial_degree)
-
-    new_pupil = deepcopy(pupil)
-    new_pupil.p[:] = np.abs(new_pupil.p[:]) * np.exp(1j * phi * zernike(zernike_coeffs))
-
-    return new_pupil
