@@ -17,16 +17,16 @@ def fake_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 @pytest.fixture
 def fake_single_hdr_data():
-    """ The three 5x5 matrices correspond to three images collected under different exposure times. The assigned values represent over-, under-, and properly exposed pixels.
+    """ The three 5x5 matrices (img1, img2, img3) correspond to three images collected under different exposure times. The assigned values range between 1 and 9, and they represent over-, under-, and properly exposed pixels.
     
     Thresholds:
-    Overexposed (o): > 7
+    Overexposed (o):      > 7
     Properly exposed (p): between 3 and 7
-    Underexposed (u): < 3
+    Underexposed (u):     < 3
         Note: For the longest exposure time image (img3), the hdr_combine function checks for underexposed pixels by comparing them to the dark_frame pixel values (rather than dark_frame + minthreshold). 
         It means that the pixels with a value of 2.5 are underexposed for img1 and img2, but are marked as properly exposed for img3
 
-    Pixels in positions [0,:], [4,:], [:,0] and [:,4] of each matrix verify the difference in the definition of underexposed pixeel between img3 and the other images.
+    Pixels in positions [0,:], [4,:], [:,0] and [:,4] of each matrix verify the difference in the definition of underexposed pixels between img3 and the other images.
     The other pixels verify the following cases:
         [1,1]: u, u, u (in img1, img2, img3 respectively)
         [1,2]: p, p, p
