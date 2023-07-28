@@ -268,7 +268,7 @@ def hdr_combine(
         single hdr image
     """
     # Create array of dark frames
-    #dark_array = np.stack((dark_fr,) * ldr_array.shape[0])
+    # dark_array = np.stack((dark_fr,) * ldr_array.shape[0])
 
     # Normalise ldr & dark frame
     norm_const = 255 / np.max(ldr_array)
