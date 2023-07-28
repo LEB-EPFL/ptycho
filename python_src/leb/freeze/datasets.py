@@ -267,9 +267,6 @@ def hdr_combine(
     NDArray[np.float64]
         single hdr image
     """
-    # Create array of dark frames
-    # dark_array = np.stack((dark_fr,) * ldr_array.shape[0])
-
     # Normalise ldr & dark frame
     norm_const = 255 / np.max(ldr_array)
     ldr_array[0, :, :] = ldr_array[0, :, :] * norm_const
@@ -279,7 +276,6 @@ def hdr_combine(
 
     # Array for scaling pixel signal in each image
     expo_array = expo_times * 10 ** (gain / 20)
-    # expo_array = expo_times
 
     # Threshold of under-/overexposure
     minclip = minthreshold
