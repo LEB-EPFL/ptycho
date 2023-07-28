@@ -11,14 +11,7 @@ from skimage.transform import rescale
 from tqdm import tqdm
 
 from leb.freeze.datasets import FPDataset
-from leb.freeze.zernike import Zernike
-
-
-MAX_NUM_ZERNIKE_COEFFS = 10
-"""The maximum number of Zernike coefficients that can be used to model a pupil.
-
-10 coefficients will cover all Zernike polynomials up to radial degree 3.
-"""
+from leb.freeze.zernike import MAX_NUM_ZERNIKE_COEFFS, Zernike
 
 
 class FPRecoveryError(Exception):
