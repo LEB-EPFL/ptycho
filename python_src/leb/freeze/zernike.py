@@ -45,7 +45,7 @@ class Zernike:
         if weights.ndim != 1:
             raise ValueError(f"Expected 1D weights, got {weights.ndim} weights.")
         if len(weights) > self._z.nk:
-            raise ValueError(f"Expected {self._z.nk} weights, got {len(weights)}.")
+            raise ValueError(f"Expected at most {self._z.nk} weights, got {len(weights)}.")
         if len(weights) < self._z.nk:
             # Append zeros to weights to match the number of Zernike modes.
             # This is necessary because the zernike package expects a full set of weights for a

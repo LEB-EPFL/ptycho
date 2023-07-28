@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   can be used for calibrations.
 - Added a function `hdr_stack` to combine multiple, low dynamic range FPDatasets into a single HDR
   FPDataset.
+- `Pupil` objects now contain a `Zernike` instance that can be used for pupil calculations during
+  Fourier Ptychographic recovery routines.
 
 ### Changed
 
