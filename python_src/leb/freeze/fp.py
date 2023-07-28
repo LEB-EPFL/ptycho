@@ -299,6 +299,7 @@ class Pupil:
             zernike_coeffs = [0.0] * MAX_NUM_ZERNIKE_COEFFS
 
         zernike = cls._setup_zernike((num_px, num_px), pupil_radius_px, zernike_coeffs)
+        pupil_data *= np.exp(1j * zernike(zernike_coeffs))
         pupil = Pupil(pupil_data, k_S, dk, pupil_radius_px, zernike)
 
         return pupil
