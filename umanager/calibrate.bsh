@@ -38,8 +38,9 @@ String clearCommand = "fill 0";
 // coordinate system.
 String direction = "clockwise";
 
-// The three possible exposure times in ms
+// The three exposure times in ms
 double[] exposureTime = {1000, 2500, 5000};
+// The gain values in dB
 float[] gain = {6, 10, 25};
 
 // Returns the x, y index of a position on a square grid whose trajectory spirals outward from the center.
