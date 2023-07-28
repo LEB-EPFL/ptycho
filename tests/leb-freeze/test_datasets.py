@@ -90,7 +90,7 @@ def fake_single_hdr_data():
 
 @pytest.fixture
 def fake_stack_hdr_data():
-    """Same test data as above, duplicated to get a stack of two datasets"""
+    """Same test data as in fake_single_hdr_data, duplicated to get a stack of two datasets"""
     img1 = np.array(
         [
             [2.5, 2.5, 2.5, 2.5, 2.5],
