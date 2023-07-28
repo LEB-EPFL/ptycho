@@ -21,6 +21,9 @@ int[] centerLEDCoord = {12, 16};
 // The number of LEDs to use during the calibration; can be less than the number of LEDs in the matrix
 int numLEDs = 15 * 15;
 
+// The base path to store the results
+String basePath = "C:/Users/laboleb/Desktop/calibration/dataset_"
+
 // Serial communications configuration
 // Data here should change if the serial interface to the LED controller changes
 String port = "COM5"; 
@@ -40,6 +43,7 @@ String direction = "clockwise";
 
 // The three exposure times in ms
 double[] exposureTime = {1000, 2500, 5000};
+
 // The gain values in dB
 float[] gain = {6, 10, 25};
 
@@ -143,11 +147,10 @@ for (int j = 0; j < 3; j++) {
 	    
 	}
 	store.freeze();
-	saveLocation = "C:/Users/laboleb/Desktop/callibration_darks/dataset_" + String.valueOf(j);
+	saveLocation = basePath + String.valueOf(j);
 	mmc.sleep(5000);
 	store.save(Datastore.SaveMode.MULTIPAGE_TIFF, saveLocation);
 	mmc.sleep(5000);
 	
 	store.close();
-	
 }
