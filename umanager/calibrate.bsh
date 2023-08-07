@@ -15,11 +15,11 @@
  */
 
 // The coordinate of the on-axis LED as determined during the initial alignment
-int[] centerLEDCoord = {16, 16};
+int[] centerLEDCoord = {12, 16};
 
 
 // The number of LEDs to use during the calibration; can be less than the number of LEDs in the matrix
-int numLEDs = 16 * 16;
+int numLEDs = 15 * 15;
 
 // Serial communications configuration
 // Data here should change if the serial interface to the LED controller changes
@@ -37,6 +37,10 @@ String clearCommand = "fill 0";
 // The spiral direction as seen looking at the board, i.e. along positive z-axis in LED matrix
 // coordinate system.
 String direction = "clockwise";
+
+// The three possible exposure times in ms
+double[] exposureTime = {1000, 2500, 5000};
+float[] gain = {6, 10, 25};
 
 // Returns the x, y index of a position on a square grid whose trajectory spirals outward from the center.
 //
@@ -79,45 +83,72 @@ int[] spiral(int index, int[] center, String direction) {
 import org.micromanager.data.Datastore;
 import org.micromanager.display.DisplayWindow;
 
-Datastore store = mm.data().createRAMDatastore();
-DisplayWindow display = mm.displays().createDisplay(store);
-mm.displays().manage(store);
+Datastore store;
+DisplayWindow display;
 cb = mm.data().coordsBuilder();
+
+String saveLocation;
+
+mmc.sleep(30000);
 
 // Main acquisition loop
 int[] currentCoords;
-for (int i = 0; i < numLEDs; i++) {
-    print("Iteration number " + i + " of " + (numLEDs - 1));
+for (int j = 0; j < 3; j++) {
+	mmc.sleep(5000);
+	// Set exposure time
+	double currentExposure = exposureTime[j];
+	mmc.setExposure(currentExposure);
+	//Set gain
+	float currentGain = gain[j];
+	mmc.setProperty("Grasshopper3 GS3-U3-23S6M_22562331", "Gain(dB)", currentGain);
 
-    // Clear the LED matrix
-    mmc.setSerialPortCommand(port, clearCommand, commandTerminator);
-    answer = mmc.getSerialPortAnswer(port, answerTerminator); 
-
-    // Get the coordinates of the LED to illuminate
-    currentCoords = spiral(i, centerLEDCoord, direction);
-    print("LED x-coord: " + currentCoords[0] + ", LED y-coord: " + currentCoords[1]);
-
-    // Draw the pixel
-    mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + currentCoords[1] +" 1", commandTerminator);
-    answer = mmc.getSerialPortAnswer(port, answerTerminator);
-
-    // Take image, assign coordinates, and put it in the image store.
-    images = mm.live().snap(true);
-    img = images.get(0);
-
-    metadata = img.getMetadata();
-    userDataBuilder = metadata.getUserData().copyBuilder();
-    userData = userDataBuilder
-        .putInteger("LEDCoordX", currentCoords[0])
-        .putInteger("LEDCoordY", currentCoords[1])
-        .putInteger("centerLEDCoordX", centerLEDCoord[0])
-        .putInteger("centerLEDCoordY", centerLEDCoord[1])
-        .build();
-    cMetadata = metadata.copyBuilderPreservingUUID().userData(userData).build();
-    coords = cb.time(i).build();
-    cImg = img.copyWith(coords, cMetadata);
-
-    store.putImage(cImg);
+	store = mm.data().createRAMDatastore();
+	display = mm.displays().createDisplay(store);
+	mm.displays().manage(store);
+	
+	for (int i = 0; i < numLEDs; i++) {
+	    print("Iteration number " + i + " of " + (numLEDs - 1));
+	
+	    // Clear the LED matrix
+	    mmc.setSerialPortCommand(port, clearCommand, commandTerminator);
+	    answer = mmc.getSerialPortAnswer(port, answerTerminator); 
+	
+	    // Get the coordinates of the LED to illuminate
+	    currentCoords = spiral(i, centerLEDCoord, direction);
+	    print("LED x-coord: " + currentCoords[0] + ", LED y-coord: " + currentCoords[1]);
+	
+	    // Draw the pixel
+	    mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + currentCoords[1] +" 100", commandTerminator);
+	    answer = mmc.getSerialPortAnswer(port, answerTerminator);
+	
+	    // Take image, assign coordinates, and put it in the image store.
+	    images = mm.live().snap(true);
+	    img = images.get(0);
+	
+	    metadata = img.getMetadata();
+	    userDataBuilder = metadata.getUserData().copyBuilder();
+	    userData = userDataBuilder
+	        .putInteger("exposureTime", currentExposure)	    	
+	        .putInteger("LEDCoordX", currentCoords[0])
+	        .putInteger("LEDCoordY", currentCoords[1])
+	        .putInteger("centerLEDCoordX", centerLEDCoord[0])
+	        .putInteger("centerLEDCoordY", centerLEDCoord[1])
+	        .build();
+	    cMetadata = metadata.copyBuilderPreservingUUID().userData(userData).build();
+	    coords = cb.time(i).build();
+	    cImg = img.copyWith(coords, cMetadata);
+	
+	    store.putImage(cImg);
+	    
+	}
+	store.freeze();
+	saveLocation = "C:/Users/laboleb/Desktop/callibration_blood/dataset_" + String.valueOf(j);
+	mmc.sleep(3000);
+	store.save(Datastore.SaveMode.MULTIPAGE_TIFF, saveLocation);
+	mmc.sleep(3000);
+	
+	store.close();
+	
 }
-
-store.freeze();
+mmc.setSerialPortCommand(port, clearCommand, commandTerminator);
+answer = mmc.getSerialPortAnswer(port, answerTerminator); 
