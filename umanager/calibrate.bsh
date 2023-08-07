@@ -143,7 +143,7 @@ for (int j = 0; j < 3; j++) {
 	    
 	}
 	store.freeze();
-	saveLocation = "C:/Users/laboleb/Desktop/callibration_blood/dataset_" + String.valueOf(j);
+	saveLocation = "C:/Users/laboleb/Desktop/callibration/dataset_" + String.valueOf(j);
 	mmc.sleep(3000);
 	store.save(Datastore.SaveMode.MULTIPAGE_TIFF, saveLocation);
 	mmc.sleep(3000);
