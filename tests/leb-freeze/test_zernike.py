@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from leb.freeze.zernike import Zernike
+from leb.freeze.zernike import MAX_ZERNIKE_RAD_INDEX, Zernike
 
 
 @pytest.fixture
@@ -43,3 +43,10 @@ def test_zernike_too_many_weights(zernike):
 def test_zernike_noll_to_zernike(noll_index, degrees):
     """Check that indexes are correct up to radial degree 3."""
     assert Zernike.noll_to_zernike(noll_index) == degrees
+
+
+def test_zernike_rad_degree_too_high():
+    radial_degree = MAX_ZERNIKE_RAD_INDEX + 1
+
+    with pytest.raises(ValueError):
+        Zernike((-1, 1), (-1, 1), (256, 256), radial_degree)

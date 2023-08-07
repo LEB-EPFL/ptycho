@@ -22,6 +22,9 @@ int[] centerLEDCoord = {12, 16};
 // The number of LEDs to use during the calibration; can be less than the number of LEDs in the matrix
 int numLEDs = 15 * 15;
 
+// The base path to store the results
+String basePath = "C:/Users/laboleb/Desktop/calibration/dataset_"
+
 // Serial communications configuration
 // Data here should change if the serial interface to the LED controller changes
 String port = "COM5"; 
@@ -41,6 +44,8 @@ String direction = "clockwise";
 
 // The three possible exposure times in ms
 double[] exposureTime = {1000, 2500, 5000};
+
+// The gain values in dB
 float[] gain = {6, 10, 25};
 
 // Returns the x, y index of a position on a square grid whose trajectory spirals outward from the center.
@@ -120,6 +125,7 @@ for (int j = 0; j < 3; j++) {
 	
 	    // Draw the pixel
 	    mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + currentCoords[1] +" 100", commandTerminator);
+
 	    answer = mmc.getSerialPortAnswer(port, answerTerminator);
 	
 	    // Take image, assign coordinates, and put it in the image store.
@@ -143,13 +149,13 @@ for (int j = 0; j < 3; j++) {
 	    
 	}
 	store.freeze();
-	saveLocation = "C:/Users/laboleb/Desktop/callibration/dataset_" + String.valueOf(j);
+
+	saveLocation = basePath + String.valueOf(j);
 	mmc.sleep(3000);
 	store.save(Datastore.SaveMode.MULTIPAGE_TIFF, saveLocation);
 	mmc.sleep(3000);
 	
 	store.close();
-	
 }
 mmc.setSerialPortCommand(port, clearCommand, commandTerminator);
 answer = mmc.getSerialPortAnswer(port, answerTerminator); 
