@@ -10,6 +10,7 @@ const uint8_t ERROR = 1;
 
 /// LED matrix configuration and commands
 const uint8_t MATRIX_SIZE = 32;
+const uint8_t BIT_DEPTH = 4;
 
 uint8_t rgbPins[]  = {2, 3, 4, 5, 6, 7};
 uint8_t addrPins[] = {A0, A1, A2, A3};
@@ -22,15 +23,21 @@ uint8_t oePin      = 9;
 // Update this function if LINE_TERMINATOR changes.
 void printHelp() {
   Serial.println(F("Available commands:"));
-  Serial.println(F("  draw <x> <y> (0 | 1)\\n"));
-  Serial.println(F("  fill (0 | 1)\\n"));
+  Serial.println(F("  draw <x> <y> (0 - 100)\\n"));
+  Serial.println(F("  fill (0 - 100)\\n"));
+  Serial.println(F("  brightfield <x> <y> <r> (0 - 100)\\n"));
+  Serial.println(F("  darkfield <x> <y> <r> (0 - 100)\\n"));
+  Serial.println(F("  phaseTop <x> <y> <r> (0 - 100)\\n"));
+  Serial.println(F("  phaseBottom <x> <y> <r> (0 - 100)\\n"));
+  Serial.println(F("  phaseRight <x> <y> <r> (0 - 100)\\n"));
+  Serial.println(F("  phaseLeft <x> <y> <r> (0 - 100)\\n"));
   Serial.println(F("  help\\n"));
   Serial.println(F(""));
   Serial.println("Note: commands must be terminated with a \\n character.");
 }
 
 /// Main program
-Adafruit_Protomatter matrix(MATRIX_SIZE, 4, 1, rgbPins, 4, addrPins, clockPin, latchPin, oePin, false);
+Adafruit_Protomatter matrix(MATRIX_SIZE, BIT_DEPTH, 1, rgbPins, 4, addrPins, clockPin, latchPin, oePin, false);
 String input;
 Message msg;
 
@@ -53,11 +60,11 @@ void loop() {
     parseMessage(input, msg);
     if (msg.is_valid) {
       doAction(msg, matrix);
-      sendResponse(OK);
+      Serial.print(String(OK) + LINE_TERMINATOR);
     } else {
       Serial.println(msg.error_msg);
       printHelp();
-      sendResponse(ERROR);
+      Serial.print(String(ERROR) + LINE_TERMINATOR);
     }
 
     // Clear the input buffer to prepare for the next line.
@@ -73,15 +80,28 @@ void doAction(const Message& msg, Adafruit_Protomatter& matrix) {
     case Command::fill:
       fill(msg, matrix);
       break;
+    case Command::brightfield:
+      brightfield(msg, matrix);
+      break;
+    case Command::darkfield:
+      darkfield(msg, matrix);
+      break;
+    case Command::phaseTop:
+      phaseTop(msg, matrix);
+      break;
+    case Command::phaseBottom:
+      phaseBottom(msg, matrix);
+      break;
+    case Command::phaseRight:
+      phaseRight(msg, matrix);
+      break;
+    case Command::phaseLeft:
+      phaseLeft(msg, matrix);
+      break;
     case Command::help:
       printHelp();
       break;
     default:
       break;
   }
-}
-
-void sendResponse(uint8_t status) {
-  Serial.print(status);
-  Serial.print(LINE_TERMINATOR);
 }
