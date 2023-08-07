@@ -3,6 +3,7 @@
  * 
  * This code acquires images by illuminating LEDs in a LED matrix in a spiral pattern starting from a center coordinate.
  * One image is acquired at each LED position.
+ * The procedure is repeated three times, for different exposure times.
  *
  * This script requires a FreeSerialPort device in your device configuration whose COM port matches the one below.
  */
