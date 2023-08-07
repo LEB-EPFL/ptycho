@@ -3,6 +3,7 @@
  * 
  * This code acquires images by illuminating LEDs in a LED matrix in a spiral pattern starting from a center coordinate.
  * One image is acquired at each LED position.
+ * The procedure is repeated three times, for different exposure times.
  *
  * This script requires a FreeSerialPort device in your device configuration whose COM port matches the one below.
  */
@@ -41,7 +42,7 @@ String clearCommand = "fill 0";
 // coordinate system.
 String direction = "clockwise";
 
-// The three exposure times in ms
+// The three possible exposure times in ms
 double[] exposureTime = {1000, 2500, 5000};
 
 // The gain values in dB
@@ -123,7 +124,8 @@ for (int j = 0; j < 3; j++) {
 	    print("LED x-coord: " + currentCoords[0] + ", LED y-coord: " + currentCoords[1]);
 	
 	    // Draw the pixel
-	    mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + currentCoords[1] +" 1", commandTerminator);
+	    mmc.setSerialPortCommand(port, drawCommand + currentCoords[0] + " " + currentCoords[1] +" 100", commandTerminator);
+
 	    answer = mmc.getSerialPortAnswer(port, answerTerminator);
 	
 	    // Take image, assign coordinates, and put it in the image store.
@@ -147,10 +149,13 @@ for (int j = 0; j < 3; j++) {
 	    
 	}
 	store.freeze();
+
 	saveLocation = basePath + String.valueOf(j);
-	mmc.sleep(5000);
+	mmc.sleep(3000);
 	store.save(Datastore.SaveMode.MULTIPAGE_TIFF, saveLocation);
-	mmc.sleep(5000);
+	mmc.sleep(3000);
 	
 	store.close();
 }
+mmc.setSerialPortCommand(port, clearCommand, commandTerminator);
+answer = mmc.getSerialPortAnswer(port, answerTerminator); 

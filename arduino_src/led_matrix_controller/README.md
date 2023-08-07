@@ -15,10 +15,16 @@ Whenever the board successfully parses your command, a `0` will be returned as a
 As an example, we can illuminate a single pixel at location (10, 17) by sending the following command to the Arduino via the serial port. Remember to send a linefeed (LF) terminator at the end:
 
 ```console
-draw 10 17 1
+draw 10 17 100
 ```
 
-The final `1` stands for `ON`. To turn off the same pixel, send
+The final `100` stands for `ON with max brightness` (100%). To illuminate the same pixel with half the brightness, send
+
+```console
+draw 10 17 50
+```
+
+To turn off the same pixel, send
 
 ```console
 draw 10 17 0

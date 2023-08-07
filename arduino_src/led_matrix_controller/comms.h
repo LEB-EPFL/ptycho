@@ -6,7 +6,7 @@
 #define COMMS_H
 
 // The maximum number of characters that can be read from Serial.
-const size_t CHAR_LIMIT    = 20;
+const size_t CHAR_LIMIT    = 25;
 
 // The line terminator character for Serial input.
 //
@@ -14,7 +14,7 @@ const size_t CHAR_LIMIT    = 20;
 const char LINE_TERMINATOR = '\n';
 
 // The set of possible commands that can be sent to the LED matrix.
-enum class Command {draw, fill, help};
+enum class Command {draw, fill, brightfield, darkfield, phaseTop, phaseBottom, phaseRight, phaseLeft, help};
 
 // Message data after parsing the serial input.
 // Each LED matrix command uses a non-exclusive subset of the fields.
@@ -22,7 +22,8 @@ typedef struct {
   Command cmd;
   int x;
   int y;
-  bool state;
+  int r;
+  int state; // percentage
   bool is_valid;
   String error_msg;
 } Message;
@@ -48,5 +49,23 @@ void parseDrawArgs(const String& args, Message& msg);
 
 // Parse the arguments for the fill command
 void parseFillArgs(const String& args, Message& msg);
+
+// Parse the arguments for the brightfield command
+void parseBrightfieldArgs(const String& args, Message& msg);
+
+// Parse the arguments for the darkfield command
+void parseDarkfieldArgs(const String& args, Message& msg);
+
+// Parse the arguments for the phaseTop command
+void parsePhaseTopArgs(const String& args, Message& msg);
+
+// Parse the arguments for the phaseBottom command
+void parsePhaseBottomArgs(const String& args, Message& msg);
+
+// Parse the arguments for the phaseRight command
+void parsePhaseRightArgs(const String& args, Message& msg);
+
+// Parse the arguments for the phaseLeft command
+void parsePhaseLeftArgs(const String& args, Message& msg);
 
 #endif // #COMMS_H

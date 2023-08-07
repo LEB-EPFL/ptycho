@@ -9,7 +9,8 @@ void messageInit(Message& msg) {
   msg.cmd = Command::draw;
   msg.x = 0;
   msg.y = 0;
-  msg.state = false;
+  msg.r = 0;
+  msg.state = 0;
   msg.is_valid = false;
   msg.error_msg = "";
 }
@@ -84,6 +85,24 @@ void parseMessage(const String& input, Message& msg) {
   } else if (verbStr.equalsIgnoreCase("fill")) {
     msg.cmd = Command::fill;
     parseFillArgs(argStr, msg);
+  } else if (verbStr.equalsIgnoreCase("brightfield")) {
+    msg.cmd = Command::brightfield;
+    parseBrightfieldArgs(argStr, msg);
+  } else if (verbStr.equalsIgnoreCase("darkfield")) {
+    msg.cmd = Command::darkfield;
+    parseDarkfieldArgs(argStr, msg);
+  } else if (verbStr.equalsIgnoreCase("phaseTop")) {
+    msg.cmd = Command::phaseTop;
+    parsePhaseTopArgs(argStr, msg);
+    } else if (verbStr.equalsIgnoreCase("phaseBottom")) {
+    msg.cmd = Command::phaseBottom;
+    parsePhaseBottomArgs(argStr, msg);
+  } else if (verbStr.equalsIgnoreCase("phaseRight")) {
+    msg.cmd = Command::phaseRight;
+    parsePhaseRightArgs(argStr, msg);
+  } else if (verbStr.equalsIgnoreCase("phaseLeft")) {
+    msg.cmd = Command::phaseLeft;
+    parsePhaseLeftArgs(argStr, msg);
   } else if (verbStr.equalsIgnoreCase("help")) {
     msg.cmd = Command::help;
   } else {
@@ -112,6 +131,85 @@ void parseFillArgs(const String& args, Message& msg) {
   int state;
   int n = sscanf(args.c_str(), "%d", &state);
   if (n == 1) {
+    msg.state = state;
+  } else {
+    msg.is_valid = false;
+  }
+}
+
+// Parse the arguments for the brightfield command
+void parseBrightfieldArgs(const String& args, Message& msg) {
+  int x, y, r, state;
+  int n = sscanf(args.c_str(), "%d %d %d %d", &x, &y, &r, &state);
+  if (n == 4) {
+    msg.x = x;
+    msg.y = y;
+    msg.r = r;
+    msg.state = state;
+  } else {
+    msg.is_valid = false;
+  }
+}
+
+void parseDarkfieldArgs(const String& args, Message& msg) {
+  int x, y, r, state;
+  int n = sscanf(args.c_str(), "%d %d %d %d", &x, &y, &r, &state);
+  if (n == 4) {
+    msg.x = x;
+    msg.y = y;
+    msg.r = r;
+    msg.state = state;
+  } else {
+    msg.is_valid = false;
+  }
+}
+
+void parsePhaseTopArgs(const String& args, Message& msg) {
+  int x, y, r, state;
+  int n = sscanf(args.c_str(), "%d %d %d %d", &x, &y, &r, &state);
+  if (n == 4) {
+    msg.x = x;
+    msg.y = y;
+    msg.r = r;
+    msg.state = state;
+  } else {
+    msg.is_valid = false;
+  }
+}
+
+void parsePhaseBottomArgs(const String& args, Message& msg) {
+  int x, y, r, state;
+  int n = sscanf(args.c_str(), "%d %d %d %d", &x, &y, &r, &state);
+  if (n == 4) {
+    msg.x = x;
+    msg.y = y;
+    msg.r = r;
+    msg.state = state;
+  } else {
+    msg.is_valid = false;
+  }
+}
+
+void parsePhaseRightArgs(const String& args, Message& msg) {
+  int x, y, r, state;
+  int n = sscanf(args.c_str(), "%d %d %d %d", &x, &y, &r, &state);
+  if (n == 4) {
+    msg.x = x;
+    msg.y = y;
+    msg.r = r;
+    msg.state = state;
+  } else {
+    msg.is_valid = false;
+  }
+}
+
+void parsePhaseLeftArgs(const String& args, Message& msg) {
+  int x, y, r, state;
+  int n = sscanf(args.c_str(), "%d %d %d %d", &x, &y, &r, &state);
+  if (n == 4) {
+    msg.x = x;
+    msg.y = y;
+    msg.r = r;
     msg.state = state;
   } else {
     msg.is_valid = false;

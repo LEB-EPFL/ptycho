@@ -1,0 +1,99 @@
+/**
+ * Acquire phase contrast dataset.
+ * 
+ * This code acquires images by illuminating four half-circles (top, bottom, right, left) of LEDs in an LED matrix.
+ * One image is acquired for each half-circle.
+ *
+ * This script requires a FreeSerialPort device in your device configuration whose COM port matches the one below.
+ */
+
+/*
+ * USER CONFIGURATION
+ * =================================================================================================================================
+ *
+ * Data in this section should change based on your experimental details.
+ */
+
+// The coordinate of the on-axis LED as determined during the initial alignment
+int[] centerLEDCoord = {12, 16};
+
+// Radius of the half-circle
+int radius = 3;
+
+// Brightness [%]
+int state = 100;
+
+// Choose exposure time and gain
+double exposureTime = 300; //ms
+float gain = 6; //dB
+
+// Serial communications configuration
+// Data here should change if the serial interface to the LED controller changes
+String port = "COM5"; 
+String commandTerminator = "\n"; 
+String answerTerminator = "\n";
+String clearCommand = "fill 0";
+
+/*
+ * CODE BELOW THIS LINE IS NOT LIKELY TO CHANGE
+ * =================================================================================================================================
+ */
+
+// Acquisiton configuration
+import org.micromanager.data.Datastore;
+import org.micromanager.display.DisplayWindow;
+
+Datastore store;
+DisplayWindow display;
+cb = mm.data().coordsBuilder();
+
+String saveLocation;
+
+// Set exposure time
+mmc.setExposure(exposureTime);
+//Set gain
+mmc.setProperty("Grasshopper3 GS3-U3-23S6M_22562331", "Gain(dB)", gain);
+
+String [] halfCircle = {"top", "bottom", "right", "left"};
+String [] commands = {"phaseTop ", "phaseBottom ", "phaseRight ", "phaseLeft "};
+
+for (int i = 0; i < 4; i++) {
+	store = mm.data().createRAMDatastore();
+	display = mm.displays().createDisplay(store);
+	mm.displays().manage(store);
+	
+	// Clear the LED matrix
+	mmc.setSerialPortCommand(port, clearCommand, commandTerminator);
+	answer = mmc.getSerialPortAnswer(port, answerTerminator); 
+	
+	// Draw the half-cicle
+	mmc.setSerialPortCommand(port, commands[i] + centerLEDCoord[0] + " " + centerLEDCoord[1] + " " + radius + " " + state, commandTerminator);
+	answer = mmc.getSerialPortAnswer(port, answerTerminator);
+	
+	// Take image and save it
+	images = mm.live().snap(true);
+	img = images.get(0);
+	
+	metadata = img.getMetadata();
+	userDataBuilder = metadata.getUserData().copyBuilder();
+	userData = userDataBuilder
+	  .putInteger("exposureTime", exposureTime)	    	
+	  .putInteger("radius", radius)
+	  .build();
+	cMetadata = metadata.copyBuilderPreservingUUID().userData(userData).build();
+	coords = cb.time(1).build();
+	cImg = img.copyWith(coords, cMetadata);
+	
+	store.putImage(cImg);
+	
+	store.freeze();
+	saveLocation = "C:/Users/laboleb/Desktop/phase_contrast_blood/" + halfCircle[i];
+	mmc.sleep(3000);
+	store.save(Datastore.SaveMode.MULTIPAGE_TIFF, saveLocation);
+	mmc.sleep(3000);
+	store.close();	
+}
+
+// Clear the LED matrix
+mmc.setSerialPortCommand(port, clearCommand, commandTerminator);
+answer = mmc.getSerialPortAnswer(port, answerTerminator); 
