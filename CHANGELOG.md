@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2023-08-07
 
 ### Added
 
@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   FPDataset.
 - `Pupil` objects now contain a `Zernike` instance that can be used for pupil calculations during
   Fourier Ptychographic recovery routines.
+- Added a `phase_contrast.bsh` script to the Micro-Manager scripts folder to acquire differential
+  phase contrast images.
+- Added `brightfield`, `darkfield`, and several phase contrast patterns and their corresponding
+  commands to the Arduino control code.
 
 ### Changed
 
@@ -101,7 +105,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a `calibrate.bsh` script to run the Fourier ptychography calibration routine.
 
-[Unreleased]: https://github.com/leb-epfl/mr-freeze/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/leb-epfl/mr-freeze/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/leb-epfl/mr-freeze/compare/v1.1.0...v2.0.0
 [1.1.1]: https://github.com/leb-epfl/mr-freeze/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/leb-epfl/mr-freeze/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/leb-epfl/mr-freeze/releases/tag/v1.0.0
