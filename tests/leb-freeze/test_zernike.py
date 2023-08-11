@@ -50,3 +50,14 @@ def test_zernike_rad_degree_too_high():
 
     with pytest.raises(ValueError):
         Zernike((-1, 1), (-1, 1), (256, 256), radial_degree)
+
+
+def test_zernike_unit_mode(zernike):
+    noll_index = 1
+    weights = np.zeros(zernike.num_modes)
+    weights[noll_index] = 1
+
+    mode = zernike.unit_mode(noll_index)
+
+    assert mode.shape == zernike._shape
+    assert np.allclose(mode, zernike(weights))

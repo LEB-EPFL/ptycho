@@ -119,3 +119,26 @@ class Zernike:
     def num_modes(self) -> int:
         """Returns the number of Zernike modes."""
         return self._z.nk
+
+    def unit_mode(self, noll_index: int) -> np.ndarray:
+        """Returns the Zernike polynomial corresponding to the given Noll index and a weight of 1.
+
+        Parameters
+        ----------
+        noll_index : int
+            Noll index.
+
+        Returns
+        -------
+        np.ndarray
+            2D array of the Zernike polynomial evaluated on its grid.
+
+        """
+        if noll_index < 0:
+            raise ValueError(f"Expected a non-negative Noll index, got {noll_index}.")
+        if noll_index > self.num_modes:
+            raise ValueError(f"Expected a Noll index less than {self.num_modes}, got {noll_index}.")
+
+        weights = np.zeros(self.num_modes)
+        weights[noll_index] = 1
+        return self(weights)

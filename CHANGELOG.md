@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `fp_recover` now takes a `learning_rate` rate parameter to adjust the learning rate of the
+  gradient descent method for pupil recovery.
+
+### Changed
+
+- The default number of Zernike coefficients to use in `fp_recover` is now 10, which includes all
+  of the Zernike modes up to radial degree 3.
+
+### Fixed
+
+- Pupil recovery by gradient descent is now working.
+
 ## [2.0.0] - 2023-08-07
 
 ### Added

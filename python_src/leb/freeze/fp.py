@@ -32,7 +32,8 @@ def fp_recover(
     upsampling_factor: int = 4,
     alpha_O: float = 1.0,
     alpha_P: float = 1.0,
-    num_zernike_coeffs: int = 6,
+    num_zernike_coeffs: int = 10,
+    learning_rate: float = 1e-4,
     show_progress: bool = False,
 ) -> tuple[NDArray[np.complex128], "Pupil"]:
     """Reconstruct a complex object and pupil from a Fourier Ptychography dataset.
@@ -59,6 +60,9 @@ def fp_recover(
     num_zernike_coeffs : int
         The number of Zernike coefficients to use in the pupil recovery. This is only used if
         pupil_recovery_method is PupilRecoveryMethod.GD.
+    learning_rate : float
+        The learning rate used in the gradient descent pupil recovery. This is only used if
+        pupil_recovery_method is PupilRecoveryMethod.GD.
     show_progress : bool
         Whether to show a progress bar during the reconstruction.
 
@@ -77,12 +81,21 @@ def fp_recover(
 
     # Though we are upsampling the target, the pupil sampling rate dk remains unchanged because
     # the upsampling is performed to add pixels to the FFT, not to improve k-space resolution!
-    dx = 2 * np.pi / pupil.k_S  # Spacing between object pixels
     initial_object = np.mean(dataset.images, axis=0)
-    target = rescale(initial_object, upsampling_factor)
-    target_fft = dx * dx * fftshift(fft2(target))
-    target_pupil = deepcopy(pupil)
     original_size_px = dataset.images.shape[1]
+    target = rescale(initial_object, upsampling_factor)
+    target_fft = fftshift(fft2(target))
+    target_pupil = deepcopy(pupil)
+
+    # Initialize data needed for gradient descent pupil recovery
+    if pupil_recovery_method is PupilRecoveryMethod.GD:
+        target_zernike_coeffs = [0 for _ in range(num_zernike_coeffs)]
+        unit_zernike_modes = np.array(
+            [pupil.zernike.unit_mode(i) for i in range(num_zernike_coeffs)]
+        )
+    else:
+        target_zernike_coeffs = None
+        unit_zernike_modes = None
 
     num_iters = tqdm(range(num_iterations)) if show_progress else range(num_iterations)
     for i in num_iters:
@@ -110,14 +123,14 @@ def fp_recover(
             low_res_img_fft = current_slice_fft * target_pupil.p
 
             # Compute the low resolution image from the current slice
-            low_res_img = ifft2(ifftshift(low_res_img_fft)) / dx / dx
+            low_res_img = ifft2(ifftshift(low_res_img_fft))
 
             # Replace the amplitude of the low res. image with the measured amplitude.
             # Leave the phase unchanged.
             low_res_img = np.abs(image) * np.exp(1j * np.angle(low_res_img))
 
             # Update the target_fft with the new slice data using the rPIE algorithm
-            next_low_res_img_fft = dx * dx * fftshift(fft2(low_res_img))
+            next_low_res_img_fft = fftshift(fft2(low_res_img))
             current_slice_fft += (
                 np.conj(target_pupil.p)
                 / (
@@ -143,34 +156,30 @@ def fp_recover(
                     low_res_img_fft = (
                         (1 / upsampling_factor) ** 2 * current_slice_fft * target_pupil.p
                     )
-                    low_res_img = ifft2(ifftshift(low_res_img_fft)) / dx / dx
+                    low_res_img = ifft2(ifftshift(low_res_img_fft))
                     img_diff = (1 / np.max(upsampling_factor**2 * image)) * (
                         1 - upsampling_factor**2 * image / np.abs(low_res_img)
                     )
-
-                    target_zernike_coeffs = [0 for _ in range(num_zernike_coeffs)]
-                    for j, coeff in enumerate(target_zernike_coeffs):
+                    for j, _ in enumerate(target_zernike_coeffs):
                         # Create a pupil comprised of a single Zernike mode
-                        temp_coeffs = [0] * num_zernike_coeffs
-                        temp_coeffs[j] = coeff
-                        zernike_mode = target_pupil.zernike(temp_coeffs)
+                        zernike_mode = unit_zernike_modes[j]
 
-                        gd_temp = ifft2(ifftshift(low_res_img_fft * np.pi * zernike_mode)) / dx / dx
+                        gd_temp = ifft2(ifftshift(low_res_img_fft * np.pi * zernike_mode))
                         # Gradient with respect to each weight
                         gradient = 2 * np.sum(img_diff * np.imag(np.conj(low_res_img) * gd_temp))
                         # Update each Zernike coefficient
-                        target_zernike_coeffs[j] += 10e-6 * gradient
+                        target_zernike_coeffs[j] += learning_rate * gradient
 
                     # Construct the final pupil data
                     phase = target_pupil.zernike(target_zernike_coeffs)
-                    new_pupil_data = np.abs(target_pupil.p) + np.exp(1j * np.pi * phase)
+                    new_pupil_data = np.abs(target_pupil.p) * np.exp(1j * np.pi * phase)
 
                     target_pupil.set_p(new_pupil_data)
                 case PupilRecoveryMethod.NONE:
                     continue
 
     # Compute the final complex object
-    return ifft2(ifftshift(target_fft)) / dx / dx, target_pupil
+    return ifft2(ifftshift(target_fft)), target_pupil
 
 
 def slice_fft(
