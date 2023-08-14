@@ -24,6 +24,16 @@ class PupilRecoveryMethod(Enum):
     NONE = "None"
 
 
+@dataclass
+class FPResults:
+    """The results of a Fourier ptychography reconstruction."""
+
+    object: NDArray[np.complex128]
+    pupil: "Pupil"
+    gradients: Optional[list[float]] = None
+    zernike_coeffs: Optional[list[float]] = None
+
+
 def fp_recover(
     dataset: FPDataset,
     pupil: "Pupil",
@@ -35,7 +45,7 @@ def fp_recover(
     num_zernike_coeffs: int = 10,
     learning_rate: float = 1e-4,
     show_progress: bool = False,
-) -> tuple[NDArray[np.complex128], "Pupil"]:
+) -> FPResults:
     """Reconstruct a complex object and pupil from a Fourier Ptychography dataset.
 
     Parameters
@@ -93,9 +103,13 @@ def fp_recover(
         unit_zernike_modes = np.array(
             [pupil.zernike.unit_mode(i) for i in range(num_zernike_coeffs)]
         )
+        results = FPResults(
+            np.array([], dtype=np.complex128), target_pupil, gradients=[], zernike_coeffs=[]
+        )
     else:
         target_zernike_coeffs = None
         unit_zernike_modes = None
+        results = FPResults(np.array([], dtype=np.complex128), target_pupil)
 
     num_iters = tqdm(range(num_iterations)) if show_progress else range(num_iterations)
     for i in num_iters:
@@ -153,6 +167,7 @@ def fp_recover(
                     )
                     target_pupil.set_p(target_pupil.p + update_term)
                 case PupilRecoveryMethod.GD:
+                    # Modified gradient descent pupil recovery from https://doi.org/10.1063/1.5090552
                     low_res_img_fft = (
                         (1 / upsampling_factor) ** 2 * current_slice_fft * target_pupil.p
                     )
@@ -175,11 +190,18 @@ def fp_recover(
                     new_pupil_data = np.abs(target_pupil.p) * np.exp(1j * np.pi * phase)
 
                     target_pupil.set_p(new_pupil_data)
+
+                    # Record results
+                    results.gradients.append(gradient)
+                    results.zernike_coeffs.append(target_zernike_coeffs)
                 case PupilRecoveryMethod.NONE:
                     continue
 
     # Compute the final complex object
-    return ifft2(ifftshift(target_fft)), target_pupil
+    results.object = ifft2(ifftshift(target_fft))
+    results.pupil = target_pupil
+
+    return results
 
 
 def slice_fft(
