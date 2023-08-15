@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `fp_recover` now takes a `learning_rate` rate parameter to adjust the learning rate of the
   gradient descent method for pupil recovery.
+- There is a now a command line tool called `calibrate_ptycho` for acquiring FP calibration
+  datasets. The acquisition engine is
+  [pymmcore-plus](https://github.com/pymmcore-plus/pymmcore-plus).
 
 ### Changed
 

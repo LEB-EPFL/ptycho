@@ -14,6 +14,7 @@ packages = [
 [tool.poetry.dependencies]
 h5py = "*"  # For zernike package
 numpy = "*"
+pymmcore-plus = "*"
 python = "^3.8"
 scikit-image = "*"
 tifffile = { extras = ["all"], version = "*" }
@@ -25,6 +26,9 @@ black = "*"
 jupyter = "*"
 pytest = "*"
 ruff = "*"
+
+[tool.poetry.scripts]
+calibrate_ptycho = "leb.freeze.scripts.calibrate_ptycho:main"
 
 [build-system]
 requires = ["poetry-core"]
