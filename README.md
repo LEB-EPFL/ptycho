@@ -18,6 +18,15 @@ dataset, unaberrated_pupil, ground_truth_object, ground_truth_pupil = fp_simulat
 obj, pupil = fp_recover(dataset=dataset, pupil=unaberrated_pupil)
 ```
 
+### Scripts
+
+This library provides the following scripts for automating certain tasks:
+
+1. [calibrate_ptycho](python_src/leb/freeze/scripts/calibrate_ptycho.py) - Acquire a Fourier
+   Ptychography calibration dataset.
+
+See the script docstrings for documentation on their use.
+
 ### Development
 
 #### Cloning and updating test data
