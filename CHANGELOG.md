@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - There is a now a command line tool called `calibrate_ptycho` for acquiring FP calibration
   datasets. The acquisition engine is
   [pymmcore-plus](https://github.com/pymmcore-plus/pymmcore-plus).
+- There is now a `Metadata` typed dictionary for use by acquisition scripts and dataset loading
+  logic.
+- A `StackType.FREEZE` dataset type has been added so that `load_dataset` works with stacks
+  acquired by the new `calibrate_ptycho` script.
+  `FPDataset` now has `save` and `load` methods for saving the dataset to and reading it from disk.
+- A Jupyter notebook was added to demonstrate how to create HDR dataset.
 
 ### Changed
 

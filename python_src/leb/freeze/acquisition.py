@@ -1,6 +1,7 @@
 """LED array acquisition tools."""
 
 from enum import Enum
+from typing import TypedDict
 
 
 class Direction(Enum):
@@ -15,6 +16,17 @@ def spiral(
 
     Parameters
     ----------
+    index : int
+        The index of the step in the spiral pattern.
+    center : tuple[int, int]
+        The (x, y) coordinates of the center of the spiral.
+    direction : Direction, optional
+        The direction of the spiral, by default Direction.COUNTERCLOCKWISE.
+
+    Returns
+    -------
+    tuple[int, int]
+        The (x, y) coordinates of the index'th step in the spiral pattern from the center.
 
     """
     x, y = center
@@ -38,3 +50,12 @@ def spiral(
             step += 1
 
     return x, y
+
+
+class Metadata(TypedDict):
+    """Metadata for a Ptychographic acquisition with one LED per exposure."""
+
+    led_indexes: tuple[int, int]
+    led_center: tuple[int, int]
+    exposure_time_ms: int
+    gain_db: float
