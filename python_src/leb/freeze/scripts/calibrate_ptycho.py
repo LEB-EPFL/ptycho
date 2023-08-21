@@ -21,13 +21,12 @@ from datetime import datetime
 import logging
 from pathlib import Path
 import sys
-from typing import TypedDict
 
 import numpy as np
 from pymmcore_plus import CMMCorePlus
 from tifffile import tifffile
 
-from leb.freeze import spiral
+from leb.freeze import Metadata, spiral
 
 
 logger = logging.getLogger(__name__)
@@ -180,13 +179,6 @@ class AcquisitionParams:
     center_led: tuple[int, int]
     exposure_time_ms: int = 50
     gain_db: float = 10
-
-
-class Metadata(TypedDict):
-    led_indexes: tuple[int, int]
-    led_center: tuple[int, int]
-    exposure_time_ms: int
-    gain_db: float
 
 
 def setup(args: argparse.Namespace) -> AcquisitionParams:

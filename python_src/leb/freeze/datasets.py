@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from enum import Enum
 import json
 from pathlib import Path
-from typing import Self
+import pickle
+from typing import Any, Self
 
 import numpy as np
 from numpy.typing import NDArray
@@ -114,11 +115,42 @@ class FPDataset:
             led_indexes=self.led_indexes,
         )
 
+    @staticmethod
+    def load(file_path: Path) -> Self:
+        """Load a dataset from disk.
+
+        Parameters
+        ----------
+        file_path : Path
+            The path to the dataset.
+
+        Returns
+        -------
+        FPDataset
+            The loaded dataset.
+
+        """
+        with file_path.open("rb") as f:
+            return pickle.load(f)
+
+    def save(self, file_path: Path) -> None:
+        """Save the dataset to disk.
+
+        Parameters
+        ----------
+        file_path : Path
+            The path to save the dataset to.
+
+        """
+        with file_path.open("wb") as f:
+            pickle.dump(self, f)
+
 
 class StackType(Enum):
     """The type of the stack of images."""
 
     MM = "micromanager"
+    FREEZE = "freeze"
 
 
 def load_dataset(
@@ -156,13 +188,18 @@ def load_dataset(
                 metadata_raw = json.load(f)
 
             metadata = parse_mm_metadata(metadata_raw)
-            calibration = calibrate_rectangular_matrix(
-                led_indexes=metadata.led_indexes,
-                center_led=metadata.center_led_index,
-                **kwargs,
-            )
+        case StackType.FREEZE:
+            with tifffile.TiffFile(file_path) as tif:
+                images = tif.asarray()
+                metadata = parse_freeze_metadata(tif.imagej_metadata)
 
-            return FPDataset.from_calibration(images=images, calibration=calibration)
+    calibration = calibrate_rectangular_matrix(
+        led_indexes=metadata.led_indexes,
+        center_led=metadata.center_led_index,
+        **kwargs,
+    )
+
+    return FPDataset.from_calibration(images=images, calibration=calibration)
 
 
 @dataclass(frozen=True)
@@ -239,6 +276,43 @@ def parse_mm_metadata(
         led_indexes=led_indexes,
         center_led_index=(center_led_coord_x, center_led_coord_y),
     )
+
+
+def parse_freeze_metadata(
+    metadata: dict[str, Any],
+    led_key: str = "led_indexes",
+    center_led_key: str = "led_center",
+) -> Metadata:
+    """Parse the metadata from a Freeze stack.
+
+    Parameters
+    ----------
+    metadata : dict
+        The raw metadata.
+    led_key : str, optional
+        The key for the LED indexes, by default "led_indexes".
+    center_led_key : str, optional
+        The key for the center LED index, by default "led_center".
+
+    Returns
+    -------
+    Metadata
+        The parsed metadata.
+
+    """
+    # Yes, I am aware that this sucks.
+    info_str = metadata["Info"]
+    json_str = info_str.split("ImageDescription: ")[1].split("\n")[0]
+    md_json = json.loads(json_str)
+    del md_json["shape"]
+
+    led_indexes = []
+    for frame in sorted(md_json.keys()):
+        coords = tuple(md_json[frame][led_key])
+        led_indexes.append(coords)
+
+    # Assumes center LED indexes remain unchanged across all frames
+    return Metadata(led_indexes=led_indexes, center_led_index=tuple(md_json[frame][center_led_key]))
 
 
 def hdr_combine(
@@ -390,7 +464,7 @@ def hdr_stack(
     dark_fr: NDArray[np.float64]
         Dark background images for each dataset (3D array)
     expo_times: NDArray[np.float64]
-        Relative exposure times
+        Relative exposure times. The first entry must be 1, the others exp_time / exp_time[0].
     gain: NDArray[np.float64]
         Gain for each stack of images in dB
 
