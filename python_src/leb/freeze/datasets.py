@@ -307,7 +307,7 @@ def parse_freeze_metadata(
     del md_json["shape"]
 
     led_indexes = []
-    for frame in sorted(md_json.keys()):
+    for frame in md_json.keys():
         coords = tuple(md_json[frame][led_key])
         led_indexes.append(coords)
 
