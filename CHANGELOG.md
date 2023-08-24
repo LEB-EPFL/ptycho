@@ -28,10 +28,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `fp_recover` now returns a `FPResults` object that contains, in addition to the object and pupil
   reconstruction, the gradients and Zernike coefficients from each iteration of the recovery
   process if the gradient descent pupil recovery method is used.
+- `calibrate_rectangular_matrix` now accounts for refraction by the microscope slide when
+  determining the wave vector corresponding to each LED.
 
 ### Fixed
 
 - Pupil recovery by gradient descent is now working.
+
+### Removed
+
+- Removed `flip_yz` argument from `calibrate_rectangular_matrix` because it was confusing and not
+  really used.
 
 ## [2.0.0] - 2023-08-07
 
