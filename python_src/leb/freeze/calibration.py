@@ -9,21 +9,23 @@ The global coordinate system has its origin where the sample plane intersects th
 towards the microscope, and the negative z-direction points towards the LED matrix. The matrix is
 located at z=axial_offset, which is negative.
 
+Positive rotations are in the counterclockwise direction about the positive z-axis of a coordinate
+system. Rotations are active, meaning that a point is rotated from one coordinate system to
+another, rather than the coordinate system being rotated to align with another.
+
 The local coordinate system of the matrix has its origin at the upper left LED, looking at the
 LED-side of the matrix. The positive x-direction points to the right, and the positive y-direction
 points down. This is the standard in computer graphics. However, this means that, if the coordinate
 system is right-handed, then the positive z-direction points into the matrix. This is the opposite
-of the global coordinate system.
+of the global coordinate system. As a result, the rotation of the LED matrix with respect to the 
+global coordinate system is positive in clockwise directions when looking at the LED-side of the
+matrix.
 
 To transform from the local coordinate system of the matrix to the global coordinate system, we
 first rotate an LED coordinate in the local coordinate system to align with the global x-axis.
 Then, we negate the y-axis of the local coordinate system to align with the global y-axis. This is
 the same as rotating by 180 degrees about the intermediate x-axis, which flips both the y- and
 z-axes.
-
-Positive rotations are in the counterclockwise direction about the positive z-axis of a coordinate
-system. Rotations are active, meaning that a point is rotated from one coordinate system to
-another, rather than the coordinate system being rotated to align with another.
 
 """
 
@@ -48,7 +50,8 @@ def calibrate_rectangular_matrix(
     axial_offset_mm: float = -50e3,
     rot_deg: float = 0.0,
     wavelength_um: float = 0.488,
-    flip_yz: bool = True,
+    t_mm: float = 0.0,
+    n_g: float = 1.515,
     sort: bool = False,
 ) -> Calibration:
     """Computes the wavevectors that correspond to a set of LED coordinates on a rectangular matrix.
@@ -79,12 +82,12 @@ def calibrate_rectangular_matrix(
         The rotation of the matrix about its central z-axis in degrees. Positive rotations are
         clockwise when looking at the LED side of the matrix because the z-axis of the local
         coordinate system points into the matrix.
-    flip_yz : bool
-        If True, then the y- and z-axes are rotated by 180 degrees about the x-axis. This is
-        necessary if the local coordinate system of the matrix is right-handed and the +z-axis
-        points into the matrix, which is the standard in computer graphics
     wavelength_um : float
         The center wavelength of light emitted from the LEDs.
+    t_mm : float
+        The thickness of the glass slide/coverslip in mm.
+    n_g : float
+        The refractive index of the glass slide/coverslip.
     sort : bool
         If True, then the results are sorted from lowest (kx, ky) magnitudes to highest. If False,
         then the results are returned in the same order as the input. Sorting helps ensures that
@@ -107,9 +110,7 @@ def calibrate_rectangular_matrix(
     led_coords[:, 1] = (led_coords[:, 1] - center_led[1]) * pitch_mm[1]
 
     # Rotate the LED coordinates about the z-axis to align the local x-axis with the global x-axis.
-    # The rotation angle is negated because we specify the rotation of the matrix relative to its
-    # position with the x-axis aligned with the global x-axis, but the rotation operation is
-    # performed in the opposite direction.
+    # Positive rotations are clockwise when looking at the LED side of the matrix.
     rot_deg = -rot_deg
     rotation_matrix = np.array(
         [
@@ -117,34 +118,108 @@ def calibrate_rectangular_matrix(
             [np.sin(np.deg2rad(rot_deg)), np.cos(np.deg2rad(rot_deg))],
         ]
     )
-    intermediate_coords = np.matmul(led_coords, rotation_matrix)
+    led_coords = np.matmul(led_coords, rotation_matrix)
 
     # Flip the y-axis to align the local y-axis with the global y-axis and account for any lateral
     # offset
-    led_coords = intermediate_coords
-    if flip_yz:
-        led_coords[:, 1] = -led_coords[:, 1]
+    led_coords[:, 1] = -led_coords[:, 1]
     led_coords += np.array(lateral_offset_mm)
 
-    # Compute the wavevectors; direction cosines are negative because the matrix is behind the
-    # sample.
+    # Compute the direction cosines of the wavevectors
     k = 2 * np.pi / wavelength_um
-    R = np.sqrt(led_coords[:, 0] ** 2 + led_coords[:, 1] ** 2 + axial_offset_mm**2)
-    dir_cos_x = -led_coords[:, 0] / R  # dimensionless b/c led_coords and R are in mm
-    dir_cos_y = -led_coords[:, 1] / R
-    dir_cos_z = -axial_offset_mm / R
-    kx = k * dir_cos_x
-    ky = k * dir_cos_y
-    kz = k * dir_cos_z
+    dir_cos = compute_dir_cos(led_coords, axial_offset_mm, t_mm, n_g)
+    k_x, k_y, k_z = k * dir_cos[:, 0], k * dir_cos[:, 1], k * dir_cos[:, 2]
 
-    # TODO Modify direction cosines to account for the refraction in the glass.
+    assert_array_almost_equal_nulp(
+        k_x**2 + k_y**2 + k_z**2, k**2 * np.ones_like(k_x), MAX_NULP
+    )
 
-    assert_array_almost_equal_nulp(kx**2 + ky**2 + kz**2, k**2 * np.ones_like(kx), MAX_NULP)
-
-    results = {idx: (kx[i], ky[i], kz[i]) for i, idx in enumerate(led_indexes)}
+    results = {idx: (k_x[i], k_y[i], k_z[i]) for i, idx in enumerate(led_indexes)}
 
     if sort:
         return dict(
             sorted(results.items(), key=lambda item: np.sqrt(item[1][0] ** 2 + item[1][1] ** 2))
         )
     return results
+
+
+def compute_dir_cos(
+    led_coords_mm: np.ndarray,
+    axial_offset_mm: float = -50.0,
+    t_mm: float = 1.0,
+    n_g: float = 1.515,
+    max_iter: int = 100,
+) -> np.ndarray:
+    """Computes the direction cosines of the wavevectors corresponding to each LED.
+
+    This function accounts for refraction at the slide/coverslip.
+
+    The LED is modeled as a point source emitting light in all directions. Refraction at the glass
+    between the LED array and the sample causes the rays to bend. Though the rays return to their
+    original direction after exiting the glass, they are displaced laterally relative to where they
+    would have intersected the optics axis if no glass had been present. This displacement means
+    that the angle of the ray intersecting the optics axis in reality is not the same as the angle
+    of the same ray derived from simple geometry in the absence of glass. This function accounts
+    for this effect.
+
+    Parameters
+    ----------
+    led_coords_mm : np.ndarray
+        The coordinates of each LED. The shape is (N, 2), where N is the number of LEDs.
+    axial_offset_mm : float
+        The offset from the LED matrix to the sample, which lies at z = 0.
+    t_mm : float
+        The thickness of the glass slide/coverslip in mm.
+    n_g : float
+        The refractive index of the glass.
+    max_iter : int
+        The maximum number of iterations to perform.
+
+    Returns
+    -------
+    np.ndarray
+        The direction cosines corresponding to each LED in the coordinate system of the instrument.
+
+    Raises
+    ------
+    RuntimeError
+        If the algorithm fails to converge after max_iter iterations.
+
+    """
+    D = np.abs(axial_offset_mm) - t_mm  # distance from LED to slide side closest to the array
+
+    def root_finder(led_coords_mm: np.ndarray) -> np.ndarray:
+        """Finds the intersection of a ray with the optics axis on the sample."""
+        r = np.sqrt(
+            led_coords_mm[0] ** 2 + led_coords_mm[1] ** 2
+        )  # distance from LED to optics axis
+        theta_xy = np.arctan2(led_coords_mm[1], led_coords_mm[0])  # angle of ray in xy-plane
+
+        x_0 = 0  # intitial guess for where the ray intersects the slide opposite the sample side
+        theta_g = -np.arcsin(r / np.sqrt(r**2 + D**2) / n_g)  # angle of ray in glass
+        x_1 = t_mm * np.tan(theta_g)  # initial guess for where the ray exits the slide
+        x_0 = x_0 - x_1
+
+        for ctr in range(max_iter + 1):
+            if abs(x_1) < 0.001:  # ray must be less than or equal to 1 um from axis in sample
+                break
+
+            if ctr == max_iter:
+                raise RuntimeError(f"Failed to converge after {max_iter} iterations.")
+
+            theta_g = -np.arcsin((r - x_0) / np.sqrt((r - x_0) ** 2 + D**2) / n_g)
+            x_1 = x_0 + t_mm * np.tan(theta_g)
+            x_0 = x_0 - x_1
+
+        # The angle of the ray in air in the plane of incidence
+        theta = np.arcsin((r - x_0) / np.sqrt((r - x_0) ** 2 + D**2))
+
+        # x- and y-direction cosines are negative because LED array is behind the sample at z=0
+        na = np.abs(np.sin(theta))
+        dir_cos_x = -na * np.cos(theta_xy)
+        dir_cos_y = -na * np.sin(theta_xy)
+        dir_cos_z = np.abs(np.cos(theta))
+
+        return np.array([dir_cos_x, dir_cos_y, dir_cos_z])
+
+    return np.apply_along_axis(root_finder, 1, led_coords_mm)
