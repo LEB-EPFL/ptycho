@@ -9,7 +9,6 @@
 % al.
 %
 % Used function:
-% FP_calibratedAngle.m
 % FP_genZernike.m
 %
 % Copyright (c) 2023, Shaowei Jiang, Pengming Song, and Guoan Zheng, 
