@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `FPDataset` now has `save` and `load` methods for saving the dataset to and reading it from disk.
 - `FPDataset.save` supports saving to both a pickled and a MATLAB format.
 - A Jupyter notebook was added to demonstrate how to create HDR dataset.
+- MATLAB scripts were added to the `misc` folder for running FP reconstructions through the
+  algorithm of Jiang, et al. Nature Protocols 18, 2051 (2023). This is used to cross-check the
+  Python code.
 
 ### Changed
 
