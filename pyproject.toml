@@ -17,6 +17,7 @@ numpy = "*"
 pymmcore-plus = "*"
 python = "^3.8"
 scikit-image = "*"
+scipy = "*"
 tifffile = { extras = ["all"], version = "*" }
 tqdm = "*"
 zernike = "*"

@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   logic.
 - A `StackType.FREEZE` dataset type has been added so that `load_dataset` works with stacks
   acquired by the new `calibrate_ptycho` script.
-  `FPDataset` now has `save` and `load` methods for saving the dataset to and reading it from disk.
+- `FPDataset` now has `save` and `load` methods for saving the dataset to and reading it from disk.
+- `FPDataset.save` supports saving to both a pickled and a MATLAB format.
 - A Jupyter notebook was added to demonstrate how to create HDR dataset.
 
 ### Changed

@@ -1,6 +1,6 @@
 """Data structures and methods for representing Fourier Ptychographic datasets."""
 from dataclasses import dataclass
-from enum import Enum
+from enum import auto, Enum
 import json
 from pathlib import Path
 import pickle
@@ -8,12 +8,18 @@ from typing import Any, Self
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.io import savemat
 import scipy.ndimage as sci
 from skimage.restoration import inpaint
 import tifffile
 from tqdm import tqdm
 
 from leb.freeze.calibration import Calibration, LEDIndexes, calibrate_rectangular_matrix
+
+
+class Format(Enum):
+    PICKLE = auto()
+    MATLAB = auto()
 
 
 @dataclass(frozen=True)
@@ -117,7 +123,7 @@ class FPDataset:
 
     @staticmethod
     def load(file_path: Path) -> Self:
-        """Load a dataset from disk.
+        """Load a pickled dataset from disk.
 
         Parameters
         ----------
@@ -133,7 +139,7 @@ class FPDataset:
         with file_path.open("rb") as f:
             return pickle.load(f)
 
-    def save(self, file_path: Path) -> None:
+    def save(self, file_path: Path, format: Format = Format.PICKLE) -> None:
         """Save the dataset to disk.
 
         Parameters
@@ -142,9 +148,23 @@ class FPDataset:
             The path to save the dataset to.
 
         """
-        with file_path.open("wb") as f:
-            pickle.dump(self, f)
+        if format == Format.PICKLE:
+            with file_path.open("wb") as f:
+                pickle.dump(self, f)
+        elif format == Format.MATLAB:
+            # Format follows code from Shaowei Jiang, Pengming Song, Tianbo Wang, et al.,
+            # "Spatial and Fourier domain ptychography for high-throughput bio-imaging",
+            # Nature Protocols, 2023
+            data = {
+                # move the first dimension to the end
+                "imageAmpSeq": self.images.transpose(1, 2, 0),
+                "imNum": self.images.shape[0],
+                "kx": self.wavevectors[:, 0],
+                "ky": self.wavevectors[:, 1],
+            }
 
+            with file_path.open("wb") as f:
+                savemat(f, data)
 
 class StackType(Enum):
     """The type of the stack of images."""
