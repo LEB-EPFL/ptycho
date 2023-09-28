@@ -166,6 +166,7 @@ class FPDataset:
             with file_path.open("wb") as f:
                 savemat(f, data)
 
+
 class StackType(Enum):
     """The type of the stack of images."""
 
