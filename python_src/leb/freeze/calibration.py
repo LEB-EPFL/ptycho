@@ -43,7 +43,7 @@ def calibrate_rectangular_matrix(
     center_led: LEDIndexes,
     pitch_mm: float | tuple[float, float] = 4.0,
     lateral_offset_mm: tuple[float, float] = (0.0, 0.0),
-    axial_offset_mm: float = -50e3,
+    axial_offset_mm: float = -65,
     rot_deg: float = 0.0,
     wavelength_um: float = 0.488,
     t_mm: float = 0.0,

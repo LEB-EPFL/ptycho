@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Pupil recovery by gradient descent is now working.
+- Fixed the default value for the `axial_offset_mm` keyword argument to the function
+`calibrate_rectangular_matrix`. It was likely assumed to be in microns and not millimeters.
 
 ### Removed
 
