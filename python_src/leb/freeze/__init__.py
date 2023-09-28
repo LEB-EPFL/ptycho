@@ -6,6 +6,7 @@ The public API is defined here.
 
 from leb.freeze.acquisition import Direction, Metadata, spiral  # noqa: F401
 from leb.freeze.datasets import (  # noqa: F401
+    Format,
     FPDataset,
     StackType,
     hdr_combine,
