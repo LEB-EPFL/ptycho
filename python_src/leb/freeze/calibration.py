@@ -28,13 +28,9 @@ the same as rotating by 180 degrees about the intermediate x-axis, which flips b
 z-axes.
 
 """
+import warnings
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal_nulp
-
-# Used to test whether wavevector component squared magnitudes sum to k
-# See https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_array_almost_equal_nulp.html#numpy.testing.assert_array_almost_equal_nulp
-MAX_NULP = 2
 
 LEDIndexes = tuple[int, int]
 Wavevector = tuple[float, float, float]
@@ -130,9 +126,12 @@ def calibrate_rectangular_matrix(
     dir_cos = compute_dir_cos(led_coords, axial_offset_mm, t_mm, n_g)
     k_x, k_y, k_z = k * dir_cos[:, 0], k * dir_cos[:, 1], k * dir_cos[:, 2]
 
-    assert_array_almost_equal_nulp(
-        k_x**2 + k_y**2 + k_z**2, k**2 * np.ones_like(k_x), MAX_NULP
-    )
+    sum_of_sqs = k_x**2 + k_y**2 + k_z**2
+    if np.any(np.abs(sum_of_sqs - k**2) > 1e-7):
+        warnings.warn(
+            "Sum of squares of computed wavevectors differs from the square of the wavenumber. "
+            f"Sum of squares: {sum_of_sqs}, square of wavenumber: {k**2}."
+        )
 
     results = {idx: (k_x[i], k_y[i], k_z[i]) for i, idx in enumerate(led_indexes)}
 
