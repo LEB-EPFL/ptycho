@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.0] - 2024-01-22
 
 ### Added
 
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [pymmcore-plus](https://github.com/pymmcore-plus/pymmcore-plus).
 - There is now a `Metadata` typed dictionary for use by acquisition scripts and dataset loading
   logic.
-- A `StackType.FREEZE` dataset type has been added so that `load_dataset` works with stacks
+- A `StackType.LEB` dataset type has been added so that `load_dataset` works with stacks
   acquired by the new `calibrate_ptycho` script.
 - `FPDataset` now has `save` and `load` methods for saving the dataset to and reading it from disk.
 - `FPDataset.save` supports saving to both a pickled and a MATLAB format.
@@ -147,7 +147,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a `calibrate.bsh` script to run the Fourier ptychography calibration routine.
 
-[Unreleased]: https://github.com/leb-epfl/mr-freeze/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/leb-epfl/mr-freeze/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/leb-epfl/mr-freeze/compare/v2.0.0...v3.0.0
 [2.0.0]: https://github.com/leb-epfl/mr-freeze/compare/v1.1.0...v2.0.0
 [1.1.1]: https://github.com/leb-epfl/mr-freeze/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/leb-epfl/mr-freeze/compare/v1.0.0...v1.1.0

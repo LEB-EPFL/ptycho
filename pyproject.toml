@@ -4,6 +4,7 @@ version = "3.0.0"
 description = "Imaging processing with Fourier ptychography"
 authors = [
     "Kyle M. Douglass <kyle.douglass@epfl.ch>",
+    "Katarzyna Glinka <katarzyna.glinka@epfl.ch>",
     "Christian Zimmerli <christian.zimmerli@epfl.ch>"
 ]
 readme = "README.md"
