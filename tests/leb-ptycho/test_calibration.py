@@ -2,7 +2,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest
 
-from leb.freeze.calibration import calibrate_rectangular_matrix
+from leb.ptycho.calibration import calibrate_rectangular_matrix
 
 
 MAX_DECIMAL_PRECISION = 4

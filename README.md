@@ -1,15 +1,17 @@
-# Mr. Freeze
+# LEB Ptychography
 
-![build](https://github.com/LEB-EPFL/mr-freeze/actions/workflows/build.yml/badge.svg)
+![build](https://github.com/LEB-EPFL/ptycho/actions/workflows/build.yml/badge.svg)
 
-Hardware control and image analysis code for Mr. Freeze, the LEB plunge freezer.
+Hardware control and image analysis code for Fourier Ptychography.
 
-## leb-freeze - A Python package for Fourier Ptychography
+## leb-ptycho - A Python package for Fourier Ptychography
+
+This is a port of the Fourier Ptychography MATLAB code presented in this paper: [Jiang, et al., Spatial and Fourier-domain ptychography for high-throughput bio-imaging, Nature Protocols 18, 2051 (2023)](https://www.nature.com/articles/s41596-023-00829-4)
 
 ### Getting Started
 
 ```python
-from leb.freeze import fp_simulation, fp_recover
+from leb.ptycho import fp_simulation, fp_recover
 
 # Simulate a Fourier Ptychography dataset
 dataset, unaberrated_pupil, ground_truth_object, ground_truth_pupil = fp_simulation()
@@ -22,7 +24,7 @@ obj, pupil = fp_recover(dataset=dataset, pupil=unaberrated_pupil)
 
 This library provides the following scripts for automating certain tasks:
 
-1. [calibrate_ptycho](python_src/leb/freeze/scripts/calibrate_ptycho.py) - Acquire a Fourier
+1. [calibrate_ptycho](python_src/leb/ptycho/scripts/calibrate_ptycho.py) - Acquire a Fourier
    Ptychography calibration dataset.
 
 See the script docstrings for documentation on their use.

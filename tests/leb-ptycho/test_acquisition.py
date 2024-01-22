@@ -1,6 +1,6 @@
 import pytest
 
-from leb.freeze import Direction, spiral
+from leb.ptycho import Direction, spiral
 
 
 @pytest.mark.parametrize(

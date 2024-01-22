@@ -14,7 +14,7 @@ from skimage.restoration import inpaint
 import tifffile
 from tqdm import tqdm
 
-from leb.freeze.calibration import Calibration, LEDIndexes, calibrate_rectangular_matrix
+from leb.ptycho.calibration import Calibration, LEDIndexes, calibrate_rectangular_matrix
 
 
 class Format(Enum):
@@ -171,7 +171,7 @@ class StackType(Enum):
     """The type of the stack of images."""
 
     MM = "micromanager"
-    FREEZE = "freeze"
+    LEB = "leb"
 
 
 def load_dataset(
@@ -209,7 +209,7 @@ def load_dataset(
                 metadata_raw = json.load(f)
 
             metadata = parse_mm_metadata(metadata_raw)
-        case StackType.FREEZE:
+        case StackType.LEB:
             with tifffile.TiffFile(file_path) as tif:
                 images = tif.asarray()
                 metadata = parse_freeze_metadata(tif.imagej_metadata)

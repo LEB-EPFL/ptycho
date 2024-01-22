@@ -8,9 +8,9 @@ from skimage.color import rgb2gray
 from skimage.data import astronaut, camera
 from skimage.transform import resize
 
-from leb.freeze.calibration import Calibration, calibrate_rectangular_matrix
-from leb.freeze.datasets import FPDataset
-from leb.freeze.fp import Pupil, slice_fft
+from leb.ptycho.calibration import Calibration, calibrate_rectangular_matrix
+from leb.ptycho.datasets import FPDataset
+from leb.ptycho.fp import Pupil, slice_fft
 
 
 def fp_simulation(

@@ -10,8 +10,8 @@ from numpy.typing import NDArray
 from skimage.transform import rescale
 from tqdm import tqdm
 
-from leb.freeze.datasets import FPDataset
-from leb.freeze.zernike import MAX_NUM_ZERNIKE_COEFFS, Zernike
+from leb.ptycho.datasets import FPDataset
+from leb.ptycho.zernike import MAX_NUM_ZERNIKE_COEFFS, Zernike
 
 
 class FPRecoveryError(Exception):
