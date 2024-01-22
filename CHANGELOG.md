@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Renamed the Python package to `leb.ptycho`.
 - The default number of Zernike coefficients to use in `fp_recover` is now 10, which includes all
   of the Zernike modes up to radial degree 3.
 - `fp_recover` now returns a `FPResults` object that contains, in addition to the object and pupil

@@ -1,6 +1,6 @@
 # Micro-Manager
 
-Micro-manager scripts for controlling the microscope on the plunge freezer.
+Micro-manager scripts for controlling the Fourier ptychographic microscope.
 
 ## Getting Started
 

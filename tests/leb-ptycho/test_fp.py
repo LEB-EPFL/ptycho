@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from leb.freeze.datasets import FPDataset
-from leb.freeze.fp import fp_recover, FPRecoveryError, PupilRecoveryMethod, Pupil
+from leb.ptycho.datasets import FPDataset
+from leb.ptycho.fp import fp_recover, FPRecoveryError, PupilRecoveryMethod, Pupil
 
 
 NUM_PX = (64, 64)

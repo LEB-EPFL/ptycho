@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from leb.freeze.zernike import MAX_ZERNIKE_RAD_INDEX, Zernike
+from leb.ptycho.zernike import MAX_ZERNIKE_RAD_INDEX, Zernike
 
 
 @pytest.fixture

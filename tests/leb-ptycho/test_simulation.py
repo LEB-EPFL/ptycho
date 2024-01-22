@@ -1,7 +1,7 @@
 import pytest
 
-from leb.freeze.fp import FPRecoveryError, fp_recover
-from leb.freeze.simulation import fp_simulation
+from leb.ptycho.fp import FPRecoveryError, fp_recover
+from leb.ptycho.simulation import fp_simulation
 
 
 def test_simulation():

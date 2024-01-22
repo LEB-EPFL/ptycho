@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 
-from leb.freeze.datasets import FPDataset, hdr_combine, hdr_stack
+from leb.ptycho.datasets import FPDataset, hdr_combine, hdr_stack
 
 
 @pytest.fixture

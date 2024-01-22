@@ -26,7 +26,7 @@ import numpy as np
 from pymmcore_plus import CMMCorePlus
 from tifffile import tifffile
 
-from leb.freeze import Metadata, spiral
+from leb.ptycho import Metadata, spiral
 
 
 logger = logging.getLogger(__name__)
