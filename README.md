@@ -1,6 +1,7 @@
 # LEB Ptychography
 
 ![build](https://github.com/LEB-EPFL/ptycho/actions/workflows/build.yml/badge.svg)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10549089.svg)](https://doi.org/10.5281/zenodo.10549089)
 
 Hardware control and image analysis code for Fourier Ptychography.
 
